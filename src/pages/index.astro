@@ -391,7 +391,7 @@ const navLinks = [
     })();
   </script>
 
-  <div id="landing-root" class="landing min-h-screen overflow-x-hidden">
+  <div id="landing-root" class="landing min-h-screen overflow-x-clip">
     <!-- ========== 导航栏 ========== -->
     <nav class="nav-blur fixed top-0 inset-x-0 z-50">
       <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -480,6 +480,7 @@ const navLinks = [
         <span>向下滚动探索</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
       </div>
+      <button id="hero-motion-toggle" type="button" class="absolute bottom-6 right-6 text-xs text-ink-500 hover:text-fire-400 border border-ink-800/60 hover:border-fire-500/40 rounded-lg px-2.5 py-1.5 transition">暂停动画</button>
     </section>
 
     <!-- ========== 信任指标 ========== -->
@@ -508,7 +509,10 @@ const navLinks = [
 
     <!-- ========== 生态 marquee ========== -->
     <section class="py-10 border-b border-ink-800/60 overflow-hidden">
-      <div class="max-w-7xl mx-auto px-6 mb-6 text-center text-xs uppercase tracking-widest text-ink-500">与你的 AI 工具链无缝协作</div>
+      <div class="max-w-7xl mx-auto px-6 mb-6 flex items-center justify-center gap-3">
+        <span class="text-xs uppercase tracking-widest text-ink-500">与你的 AI 工具链无缝协作</span>
+        <button id="marquee-toggle" type="button" class="text-xs text-ink-400 hover:text-fire-400 border border-ink-800 hover:border-fire-500/40 rounded-md px-2 py-1 transition">暂停滚动</button>
+      </div>
       <div class="marquee" aria-hidden="true">
         <div class="marquee-track">
           {[...marqueeTools, ...marqueeTools].map((t) => (
@@ -521,7 +525,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 为什么选择 Firecrawl ========== -->
-    <section id="features" class="py-24 relative scroll-mt-16">
+    <section id="features" tabindex="-1" class="py-24 relative scroll-mt-16">
       <div class="max-w-7xl mx-auto px-6">
         <div class="reveal text-center max-w-2xl mx-auto mb-16">
           <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">为什么选择 Firecrawl</div>
@@ -556,7 +560,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 端点概览 ========== -->
-    <section id="endpoints" class="py-24 relative scroll-mt-16">
+    <section id="endpoints" tabindex="-1" class="py-24 relative scroll-mt-16">
       <div class="absolute inset-0 bg-radial-fire opacity-50"></div>
       <div class="relative max-w-7xl mx-auto px-6">
         <div class="reveal text-center max-w-2xl mx-auto mb-16">
@@ -625,7 +629,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 快速开始 ========== -->
-    <section id="quickstart" class="py-24 scroll-mt-16">
+    <section id="quickstart" tabindex="-1" class="py-24 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-6">
         <div class="reveal text-center max-w-2xl mx-auto mb-12">
           <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">快速开始</div>
@@ -639,13 +643,13 @@ const navLinks = [
 
         <div data-tabs="qs" class="reveal">
           <div class="flex flex-wrap items-center justify-center gap-2 mb-8" role="tablist" aria-label="快速开始示例">
-            <button type="button" data-tab="search" class="tab-btn active px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 transition">🔍 搜索</button>
-            <button type="button" data-tab="scrape" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 text-ink-300 transition">📥 抓取</button>
-            <button type="button" data-tab="interact" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 text-ink-300 transition">🖱️ 交互</button>
+            <button type="button" role="tab" id="qs-tab-search" data-tab="search" aria-selected="true" tabindex="0" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 transition">🔍 搜索</button>
+            <button type="button" role="tab" id="qs-tab-scrape" data-tab="scrape" aria-selected="false" tabindex="-1" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 transition">📥 抓取</button>
+            <button type="button" role="tab" id="qs-tab-interact" data-tab="interact" aria-selected="false" tabindex="-1" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 transition">🖱️ 交互</button>
           </div>
 
           <!-- Search -->
-          <div data-panel="search">
+          <div data-panel="search" role="tabpanel" id="qs-panel-search" aria-labelledby="qs-tab-search">
             <div class="grid lg:grid-cols-2 gap-6 items-start">
               <div>
                 <h3 class="text-2xl font-bold mb-3 text-ink-50">搜索 (Search)</h3>
@@ -687,7 +691,7 @@ const navLinks = [
           </div>
 
           <!-- Scrape -->
-          <div data-panel="scrape" class="hidden">
+          <div data-panel="scrape" role="tabpanel" id="qs-panel-scrape" aria-labelledby="qs-tab-scrape" hidden="until-found">
             <div class="grid lg:grid-cols-2 gap-6 items-start">
               <div>
                 <h3 class="text-2xl font-bold mb-3 text-ink-50">抓取 (Scrape)</h3>
@@ -729,7 +733,7 @@ const navLinks = [
           </div>
 
           <!-- Interact -->
-          <div data-panel="interact" class="hidden">
+          <div data-panel="interact" role="tabpanel" id="qs-panel-interact" aria-labelledby="qs-tab-interact" hidden="until-found">
             <div class="grid lg:grid-cols-2 gap-6 items-start">
               <div>
                 <h3 class="text-2xl font-bold mb-3 text-ink-50">交互 (Interact)</h3>
@@ -774,7 +778,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 为你的智能体赋能 ========== -->
-    <section id="agent" class="py-24 relative overflow-hidden scroll-mt-16">
+    <section id="agent" tabindex="-1" class="py-24 relative overflow-hidden scroll-mt-16">
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-fire-950/20 to-transparent"></div>
       <div class="relative max-w-7xl mx-auto px-6">
         <div class="reveal text-center max-w-2xl mx-auto mb-16">
@@ -825,7 +829,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 更多端点 ========== -->
-    <section class="py-24">
+    <section id="more-endpoints" class="cv-auto py-24">
       <div class="max-w-7xl mx-auto px-6 space-y-20">
         <!-- Agent -->
         <div id="agent-endpoint" class="grid lg:grid-cols-5 gap-8 items-center scroll-mt-20">
@@ -932,7 +936,7 @@ const navLinks = [
     </section>
 
     <!-- ========== SDK ========== -->
-    <section id="sdks" class="py-24 relative scroll-mt-16">
+    <section id="sdks" tabindex="-1" class="py-24 relative scroll-mt-16">
       <div class="absolute inset-0 bg-radial-fire opacity-30"></div>
       <div class="relative max-w-7xl mx-auto px-6">
         <div class="reveal text-center max-w-2xl mx-auto mb-12">
@@ -946,12 +950,12 @@ const navLinks = [
         <div data-tabs="sdk" class="reveal">
           <div class="flex flex-wrap items-center justify-center gap-2 mb-8" role="tablist" aria-label="SDK 语言">
             {sdkTabs.map((t, i) => (
-              <button type="button" data-tab={t.id} class:list={["sdk-btn px-5 py-2 rounded-lg text-sm font-medium border border-ink-800 transition", i === 0 ? "active" : "text-ink-300"]}>{t.label}</button>
+              <button type="button" role="tab" id={`sdk-tab-${t.id}`} data-tab={t.id} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1} class="sdk-btn px-5 py-2 rounded-lg text-sm font-medium border border-ink-800 transition">{t.label}</button>
             ))}
           </div>
 
           {Object.entries(sdks).map(([id, s], i) => (
-            <div data-panel={id} class:list={{ hidden: i !== 0 }}>
+            <div data-panel={id} role="tabpanel" id={`sdk-panel-${id}`} aria-labelledby={`sdk-tab-${id}`} hidden={i === 0 ? undefined : "until-found"}>
               <div class="grid lg:grid-cols-2 gap-6">
                 <div>
                   <h3 class="text-2xl font-bold mb-2 text-ink-50">
@@ -973,7 +977,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 集成 ========== -->
-    <section id="integrations" class="py-24 scroll-mt-16">
+    <section id="integrations" tabindex="-1" class="py-24 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-6">
         <div class="reveal text-center max-w-2xl mx-auto mb-12">
           <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">集成</div>
@@ -1035,7 +1039,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 开源 vs 云端 ========== -->
-    <section id="opensource" class="py-24 relative scroll-mt-16">
+    <section id="opensource" tabindex="-1" class="py-24 relative scroll-mt-16">
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-fire-950/10 to-transparent"></div>
       <div class="relative max-w-7xl mx-auto px-6">
         <div class="reveal text-center max-w-2xl mx-auto mb-12">
@@ -1088,7 +1092,7 @@ const navLinks = [
     </section>
 
     <!-- ========== CTA ========== -->
-    <section class="py-24">
+    <section class="cv-auto py-24">
       <div class="max-w-5xl mx-auto px-6">
         <div class="reveal relative glass rounded-3xl p-10 md:p-16 text-center overflow-hidden">
           <div class="absolute inset-0 bg-gradient-to-br from-fire-500/10 via-transparent to-purple-500/10"></div>
@@ -1116,7 +1120,7 @@ const navLinks = [
     </section>
 
     <!-- ========== 资源 & 社交 ========== -->
-    <section class="py-20 border-t border-ink-800/60">
+    <section class="cv-auto py-20 border-t border-ink-800/60">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-10">
           <h2 class="text-2xl font-bold mb-2 text-ink-50">保持联系</h2>
@@ -1156,7 +1160,7 @@ const navLinks = [
     </section>
 
     <!-- ========== Footer ========== -->
-    <footer class="border-t border-ink-800/60 py-12">
+    <footer class="cv-auto border-t border-ink-800/60 py-12">
       <div class="max-w-7xl mx-auto px-6">
         <div class="grid md:grid-cols-4 gap-8 mb-8">
           <div>
@@ -1226,66 +1230,135 @@ const navLinks = [
         cleanups.push(() => el.removeEventListener(ev, fn, opts));
       };
 
-      /* ---- scroll reveal ---- */
-      document.documentElement.classList.add("js-reveal");
-      cleanups.push(() => document.documentElement.classList.remove("js-reveal"));
-      const revealIO = new IntersectionObserver(
-        (entries) => entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("revealed");
-            revealIO.unobserve(e.target);
-          }
-        }),
-        { threshold: 0.08 },
-      );
-      root.querySelectorAll(".reveal").forEach((el) => revealIO.observe(el));
-      cleanups.push(() => revealIO.disconnect());
+      /* ---- scroll reveal ----
+         Native scroll-driven animation where supported; IntersectionObserver
+         fallback elsewhere; nothing under prefers-reduced-motion. */
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const sdaReveal =
+        !reduceMotion &&
+        CSS.supports("(animation-timeline: view()) and (animation-range: entry)");
+      if (sdaReveal) {
+        document.documentElement.classList.add("sda-reveal");
+        cleanups.push(() => document.documentElement.classList.remove("sda-reveal"));
+      } else if (!reduceMotion) {
+        document.documentElement.classList.add("js-reveal");
+        cleanups.push(() => document.documentElement.classList.remove("js-reveal"));
+        const revealIO = new IntersectionObserver(
+          (entries) => entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("revealed");
+              revealIO.unobserve(e.target);
+            }
+          }),
+          { threshold: 0.08 },
+        );
+        root.querySelectorAll(".reveal").forEach((el) => revealIO.observe(el));
+        cleanups.push(() => revealIO.disconnect());
+      }
 
-      /* ---- tabs (quickstart + SDK) ---- */
-      on(root, "click", (ev) => {
-        const btn = (ev.target as HTMLElement).closest<HTMLElement>("[data-tab]");
-        if (!btn) return;
-        const group = btn.closest<HTMLElement>("[data-tabs]");
-        if (!group) return;
-        const name = btn.dataset.tab!;
+      /* ---- tabs (quickstart + SDK) ----
+         ARIA tabs with roving tabindex, selection follows focus, and
+         hidden="until-found" panels that stay find-in-page searchable. */
+      const selectTab = (group: HTMLElement, btn: HTMLElement, focus = false) => {
+        const name = btn.dataset.tab;
         group.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => {
           const active = b === btn;
-          b.classList.toggle("active", active);
-          b.classList.toggle("text-ink-300", !active);
           b.setAttribute("aria-selected", String(active));
+          b.tabIndex = active ? 0 : -1;
         });
         group.querySelectorAll<HTMLElement>("[data-panel]").forEach((p) => {
-          p.classList.toggle("hidden", p.dataset.panel !== name);
+          if (p.dataset.panel === name) p.removeAttribute("hidden");
+          else p.setAttribute("hidden", "until-found");
         });
+        if (focus) btn.focus();
+      };
+      on(root, "click", (ev) => {
+        const btn = (ev.target as HTMLElement).closest<HTMLElement>("[data-tab]");
+        const group = btn?.closest<HTMLElement>("[data-tabs]");
+        if (btn && group) selectTab(group, btn);
+      });
+      on(root, "keydown", (ev) => {
+        const e = ev as KeyboardEvent;
+        const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-tab]");
+        const group = btn?.closest<HTMLElement>("[data-tabs]");
+        if (!btn || !group) return;
+        const tabs = Array.from(group.querySelectorAll<HTMLElement>("[data-tab]"));
+        const i = tabs.indexOf(btn);
+        let next: HTMLElement | undefined;
+        if (e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+        else if (e.key === "ArrowLeft") next = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === "Home") next = tabs[0];
+        else if (e.key === "End") next = tabs[tabs.length - 1];
+        if (next) {
+          e.preventDefault();
+          selectTab(group, next, true);
+        }
+      });
+      // Find-in-page revealed a hidden panel: sync the tab selection to it.
+      on(root, "beforematch", (ev) => {
+        const panel = (ev.target as HTMLElement).closest<HTMLElement>("[data-panel]");
+        const group = panel?.closest<HTMLElement>("[data-tabs]");
+        if (!panel || !group) return;
+        const btn = group.querySelector<HTMLElement>(`[data-tab="${panel.dataset.panel}"]`);
+        if (btn) selectTab(group, btn);
       });
 
-      /* ---- copy code ---- */
-      on(root, "click", async (ev) => {
-        const btn = (ev.target as HTMLElement).closest<HTMLElement>("[data-copy]");
-        if (!btn) return;
-        const code = btn.closest(".code-card")?.querySelector("pre code");
-        if (!code) return;
-        const text = (code as HTMLElement).innerText;
+      /* ---- copy code ----
+         Declarative Invoker Commands (command="--copy" commandfor=…) with a
+         click fallback where CommandEvent is missing. The role="status" span
+         next to each button announces the outcome to screen readers. */
+      const copyTimers = new WeakMap<HTMLElement, number>();
+      const report = (btn: HTMLElement, ok: boolean) => {
+        const status = btn.nextElementSibling;
+        clearTimeout(copyTimers.get(btn));
+        btn.textContent = ok ? "✓ 已复制" : "复制失败";
+        btn.classList.toggle("text-green-400", ok);
+        btn.classList.toggle("text-red-400", !ok);
+        if (status) status.textContent = ok ? "已复制" : "复制失败";
+        copyTimers.set(btn, window.setTimeout(() => {
+          btn.textContent = "复制";
+          btn.classList.remove("text-green-400", "text-red-400");
+          if (status) status.textContent = "";
+        }, 1600));
+      };
+      const copyCode = async (btn: HTMLElement, target: HTMLElement) => {
+        const text = target.innerText;
+        if (!text) return;
+        let ok = true;
         try {
           await navigator.clipboard.writeText(text);
         } catch {
-          const ta = document.createElement("textarea");
-          ta.value = text;
-          ta.style.position = "fixed";
-          ta.style.opacity = "0";
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            ok = document.execCommand("copy");
+            ta.remove();
+          } catch {
+            ok = false;
+          }
         }
-        const orig = btn.textContent ?? "复制";
-        btn.textContent = "✓ 已复制";
-        btn.classList.add("text-green-400");
-        setTimeout(() => {
-          btn.textContent = orig;
-          btn.classList.remove("text-green-400");
-        }, 1500);
-      });
+        report(btn, ok);
+      };
+      // `command` events don't bubble: listen in the capture phase.
+      on(document, "command", (ev) => {
+        const e = ev as Event & { command?: string; source?: HTMLElement };
+        if (e.command !== "--copy") return;
+        const btn = e.source;
+        const target = ev.target as HTMLElement;
+        if (btn && target) void copyCode(btn, target);
+      }, { capture: true });
+      if (!("CommandEvent" in window)) {
+        on(root, "click", (ev) => {
+          const btn = (ev.target as HTMLElement).closest<HTMLElement>('button[command="--copy"]');
+          if (!btn) return;
+          const target = document.getElementById(btn.getAttribute("commandfor") ?? "");
+          if (target) void copyCode(btn, target);
+        });
+      }
 
       /* ---- mobile menu ---- */
       const menuBtn = document.getElementById("menu-btn");
@@ -1303,20 +1376,65 @@ const navLinks = [
         );
       }
 
-      /* ---- scrollspy ---- */
+      /* ---- scrollspy ----
+         CSS scroll-target-group + :target-current does the tracking natively;
+         script only mirrors the state into aria-current. IntersectionObserver
+         fallback for browsers without it. */
       const spyLinks = Array.from(root.querySelectorAll<HTMLAnchorElement>("[data-spy]"));
-      const spyIO = new IntersectionObserver(
-        (entries) => entries.forEach((e) => {
-          if (!e.isIntersecting) return;
-          spyLinks.forEach((l) => l.classList.toggle("nav-active", l.dataset.spy === e.target.id));
-        }),
-        { rootMargin: "-30% 0px -60% 0px" },
-      );
-      spyLinks.forEach((l) => {
-        const sec = document.getElementById(l.dataset.spy!);
-        if (sec) spyIO.observe(sec);
-      });
-      cleanups.push(() => spyIO.disconnect());
+      if (CSS.supports("scroll-target-group: auto")) {
+        const syncAriaCurrent = () => {
+          const current = root.querySelector(".landing-nav a:target-current");
+          spyLinks.forEach((l) => l.setAttribute("aria-current", l === current ? "true" : "false"));
+        };
+        // The current marker can settle a frame or two after scrollend,
+        // so sync once more shortly after it.
+        const scheduleSync = () => {
+          syncAriaCurrent();
+          window.setTimeout(syncAriaCurrent, 120);
+        };
+        scheduleSync();
+        on(document, "scrollend", scheduleSync);
+      } else {
+        const spyIO = new IntersectionObserver(
+          (entries) => entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            spyLinks.forEach((l) => {
+              const active = l.dataset.spy === e.target.id;
+              l.classList.toggle("nav-active", active);
+              l.setAttribute("aria-current", String(active));
+            });
+          }),
+          { rootMargin: "-30% 0px -60% 0px" },
+        );
+        spyLinks.forEach((l) => {
+          const sec = document.getElementById(l.dataset.spy!);
+          if (sec) spyIO.observe(sec);
+        });
+        cleanups.push(() => spyIO.disconnect());
+      }
+
+      /* ---- motion pause controls (WCAG 2.2.2) ---- */
+      const marqueeBtn = document.getElementById("marquee-toggle");
+      if (marqueeBtn) {
+        on(marqueeBtn, "click", () => {
+          const paused = marqueeBtn.closest("section")?.classList.toggle("marquee-paused") ?? false;
+          marqueeBtn.textContent = paused ? "播放滚动" : "暂停滚动";
+        });
+      }
+      const heroMotionBtn = document.getElementById("hero-motion-toggle");
+      const heroEl = document.getElementById("top");
+      let setEmbersPaused: (paused: boolean) => void = () => {};
+      if (heroMotionBtn && heroEl) {
+        if (reduceMotion) {
+          heroMotionBtn.hidden = true;
+        } else {
+          on(heroMotionBtn, "click", () => {
+            const paused = heroEl.classList.toggle("motion-paused");
+            heroMotionBtn.textContent = paused ? "播放动画" : "暂停动画";
+            setEmbersPaused(paused);
+          });
+        }
+      }
 
       /* ---- count-up stats ---- */
       const counted = new WeakSet<Element>();
@@ -1328,6 +1446,11 @@ const navLinks = [
           const target = parseFloat(el.dataset.count ?? "0");
           const decimals = parseInt(el.dataset.decimals ?? "0", 10);
           const suffix = el.dataset.suffix ?? "";
+          if (reduceMotion) {
+            el.textContent = target.toFixed(decimals) + suffix;
+            countIO.unobserve(el);
+            return;
+          }
           const t0 = performance.now();
           const dur = 1200;
           const tick = (t: number) => {
@@ -1347,7 +1470,7 @@ const navLinks = [
       /* ---- hero embers ---- */
       const canvas = document.getElementById("embers") as HTMLCanvasElement | null;
       const hero = document.getElementById("top");
-      if (canvas && hero && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (canvas && hero && !reduceMotion) {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           let raf = 0;
@@ -1398,7 +1521,7 @@ const navLinks = [
             raf = requestAnimationFrame(frame);
           };
           const start = () => {
-            if (running || document.hidden) return;
+            if (running || document.hidden || hero.classList.contains("motion-paused")) return;
             running = true;
             raf = requestAnimationFrame(frame);
           };
@@ -1406,6 +1529,7 @@ const navLinks = [
             running = false;
             cancelAnimationFrame(raf);
           };
+          setEmbersPaused = (paused) => (paused ? stop() : start());
           resize();
           on(window, "resize", resize);
           const heroIO = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? start() : stop())), { threshold: 0.02 });

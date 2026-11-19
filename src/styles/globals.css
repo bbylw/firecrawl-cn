@@ -328,6 +328,8 @@
 html {
 	font-family: var(--nb-font-sans);
 	font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+	/* Keep fallback fonts at the webfont's x-height so swaps don't shift layout. */
+	font-size-adjust: from-font;
 }
 
 body {
@@ -363,16 +365,37 @@ body {
 	}
 }
 
-/* ---- Reduced motion ---- */
+/* ---- Reduced motion ----
+   Case-by-case instead of a global 0.01ms kill: persistent decorative
+   animations stop, the loading spinner keeps spinning gently, and
+   non-motion transitions (color, background) stay enabled. */
 @media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
-		scroll-behavior: auto !important;
+	.animate-flicker,
+	.animate-glow,
+	.animate-float,
+	.animate-float-delayed,
+	.animate-pulse,
+	.animate-pulse-slow,
+	.animate-marquee,
+	.animate-ember,
+	.animate-gradient-x {
+		animation: none;
 	}
+	.animate-spin {
+		animation-duration: 2s;
+	}
+}
+
+/* ---- Scroll containment under modal dialogs ----
+   Stops scroll gestures inside the dialog (or over the backdrop) from
+   chaining to the page. Progressive enhancement: the scroll lock below
+   still covers browsers without it. */
+dialog:modal {
+	overscroll-behavior: contain;
+}
+dialog::backdrop {
+	overflow: hidden;
+	overscroll-behavior: contain;
 }
 
 /* ---- Scroll lock (used by native <dialog> overlays) ---- */

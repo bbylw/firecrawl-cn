@@ -6,6 +6,40 @@
 .landing {
 	background: #09090b;
 	color: #eeeef0;
+	/* Normalize fallback fonts to the webfont's x-height while it loads. */
+	font-size-adjust: from-font;
+	overflow-wrap: break-word;
+}
+
+/* Balanced headlines, orphan-free prose. */
+.landing :is(h1, h2, h3) {
+	text-wrap: balance;
+}
+.landing p {
+	text-wrap: pretty;
+}
+
+/* Below-the-fold sections skip layout/paint until scrolled near.
+   `auto <length>` remembers the real size after first render. Only
+   non-anchor sections are deferred, and the one deferred section above
+   anchor targets (#more-endpoints) gets measured per-breakpoint estimates
+   so fragment jumps land precisely even on a fresh load. */
+.cv-auto {
+	content-visibility: auto;
+	contain-intrinsic-size: auto none auto 600px;
+}
+#more-endpoints {
+	contain-intrinsic-size: auto none auto 3205px;
+}
+@media (min-width: 768px) {
+	#more-endpoints {
+		contain-intrinsic-size: auto none auto 2602px;
+	}
+}
+@media (min-width: 1024px) {
+	#more-endpoints {
+		contain-intrinsic-size: auto none auto 2056px;
+	}
 }
 
 .landing ::selection {
@@ -126,11 +160,26 @@
 	transition: transform 0.3s;
 }
 
-.tab-btn.active,
-.sdk-btn.active {
+/* Tabs: the visual state is driven by aria-selected so it can never
+   disagree with the accessible state. The underline keeps the indicator
+   from being color-alone (WCAG 1.4.1) and survives forced-colors mode. */
+.tab-btn,
+.sdk-btn {
+	position: relative;
+	color: #b8b8c1;
+}
+.tab-btn[aria-selected="true"],
+.sdk-btn[aria-selected="true"] {
 	background: rgb(249 115 22 / 0.15);
 	color: #fb923c;
 	border-color: rgb(249 115 22 / 0.4);
+}
+.tab-btn[aria-selected="true"]::after,
+.sdk-btn[aria-selected="true"]::after {
+	content: "";
+	position: absolute;
+	inset: auto 0.5rem 0;
+	border-block-end: 2px solid #fb923c;
 }
 
 .feature-icon-wrap {
@@ -178,6 +227,17 @@
 .marquee:hover .marquee-track {
 	animation-play-state: paused;
 }
+/* Visible pause control (WCAG 2.2.2) — the marquee runs indefinitely. */
+.marquee-paused .marquee-track {
+	animation-play-state: paused;
+}
+
+/* Hero pause control: freezes every decorative animation in the hero. */
+#top.motion-paused *,
+#top.motion-paused *::before,
+#top.motion-paused *::after {
+	animation-play-state: paused !important;
+}
 
 .endpoint-glow::before {
 	content: '';
@@ -187,12 +247,14 @@
 	padding: 1px;
 	background: linear-gradient(135deg, rgb(249 115 22 / 0.5), transparent, rgb(249 115 22 / 0.2));
 	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
 	-webkit-mask-composite: xor;
 	mask-composite: exclude;
 	pointer-events: none;
 }
 
-/* Scroll-reveal: elements start hidden only when JS is running (html.js-reveal) */
+/* Scroll-reveal fallback: elements start hidden only when the
+   IntersectionObserver path is running (html.js-reveal). */
 html.js-reveal .reveal {
 	opacity: 0;
 	transform: translateY(24px);
@@ -203,9 +265,47 @@ html.js-reveal .reveal.revealed {
 	transform: translateY(0);
 }
 
-/* Active nav link */
-.landing-nav a.nav-active {
+/* Native scroll-driven reveal where supported — no JS observers needed.
+   The animation-range check filters out partially-supporting browsers. */
+@media (prefers-reduced-motion: no-preference) {
+	@supports ((animation-timeline: view()) and (animation-range: entry)) {
+		html.sda-reveal .reveal {
+			animation: reveal-in auto ease-out backwards;
+			animation-timeline: view();
+			animation-range: entry 0% entry 60%;
+		}
+		@keyframes reveal-in {
+			from {
+				opacity: 0;
+				transform: translateY(24px);
+			}
+		}
+	}
+}
+
+/* Scrollspy: native CSS tracks the section in view; .nav-active is the
+   IntersectionObserver fallback class. :is() keeps the rule valid in
+   browsers that don't know :target-current. The underline keeps the
+   active state from being color-alone. */
+.landing-nav {
+	scroll-target-group: auto;
+}
+.landing-nav a:is(:target-current, .nav-active) {
 	color: #fb923c;
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 6px;
+}
+
+/* Copy feedback live region: hidden visually but kept in the
+   accessibility tree so role="status" announcements are read. */
+.copy-status {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
 }
 
 /* Blinking terminal cursor */
@@ -224,7 +324,9 @@ html.js-reveal .reveal.revealed {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.marquee-track {
+	.marquee-track,
+	.text-gradient-fire,
+	.term-cursor {
 		animation: none;
 	}
 	html.js-reveal .reveal {

@@ -73,6 +73,15 @@
   font-size: inherit;
 }
 
+/* Balanced heading wraps and orphan-free paragraphs. Scoped to markdown
+   content only — text-wrap has a cost, so it never goes on `*`. */
+.docs-content :where(h1, h2, h3, h4, h5, h6):not([class]) {
+  text-wrap: balance;
+}
+.docs-content :where(p, blockquote, li):not([class]) {
+  text-wrap: pretty;
+}
+
 /* Markdown heading typography is token-driven from globals.css. Space above
    a heading is larger than below it, so each heading groups with its section. */
 .docs-content :where(h1:not([class])) {

@@ -1,7 +1,7 @@
 ---
 /**
- * DialogContent — inner frame of a Dialog. Centered, constrained, styled.
- * Consumer controls max-width/height via class override.
+ * DialogContent — inner frame of a Dialog. The dialog element itself is the
+ * positioned, scrolling surface; this wrapper lays out the content column.
  */
 import { cn } from "@/lib/cn";
 import type { HTMLAttributes } from "astro/types";
@@ -12,11 +12,6 @@ interface Props extends HTMLAttributes<"div"> {}
 const { class: className, "data-slot": slot = "dialog-content", ...attrs } = Astro.props;
 ---
 
-<div data-slot={slot} class="flex items-start justify-center pt-[10vh] px-4 pointer-events-none">
-  <div
-    class={cn("pointer-events-auto flex max-h-[70vh] w-full flex-col overflow-y-auto rounded-lg bg-muted shadow-lg ring-1 ring-border", className)}
-    {...attrs}
-  >
-    <slot />
-  </div>
+<div data-slot={slot} class={cn("flex flex-col", className)} {...attrs}>
+  <slot />
 </div>
