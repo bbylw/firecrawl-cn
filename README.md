@@ -49,6 +49,39 @@ _Pst. 嘿，你，来给我们的项目点个星吧 :)_
 
 ---
 
+## 关于本站
+
+本仓库是 [Firecrawl](https://github.com/firecrawl/firecrawl) 的中文落地页与文档站点，部署于 [firecrawl.ndjp.net](https://firecrawl.ndjp.net)。
+
+技术栈：**[Nimbus](https://nimbus-docs.com)**（Cloudflare 出品的 Astro 文档框架 `@cloudflare/nimbus-docs`）+ **[Bun](https://bun.com)**（最新版）+ Tailwind CSS v4。落地页位于 `/`，文档位于 `/docs`，内置全文搜索（Pagefind）、深浅色主题、每页 OG 社交卡片，以及面向 AI 智能体的 `llms.txt` / Markdown 镜像。
+
+### 本地开发
+
+```bash
+bun install        # 安装依赖
+bun run dev        # 开发服务器（http://localhost:4321）
+bun run build      # 静态构建到 dist/（含搜索索引与 OG 卡片）
+bun run preview    # 预览构建产物
+bun run lint:docs  # 文档内容规范检查
+```
+
+> 若本机 Node 版本低于 Astro 要求，可用 `bun run --bun dev` / `bun run --bun build` 强制以 Bun 运行时执行。
+
+### 目录结构
+
+```
+src/pages/index.astro       # 落地页
+src/content/docs/docs/      # 文档内容（MDX，映射到 /docs/*）
+src/components/             # 站点组件（Header、Logo、落地页组件等）
+src/styles/                 # 全局主题（火焰橙）与落地页样式
+src/pages/og/               # OG 社交卡片模板与字体（含中文子集）
+astro.config.ts             # Nimbus 站点配置
+```
+
+推送到 `main` 后，GitHub Actions（`.github/workflows/deploy.yml`）会自动构建并部署到 GitHub Pages。首次启用需在仓库 Settings → Pages 中将 Source 设为 **GitHub Actions**。
+
+---
+
 ## 为什么选择 Firecrawl？
 
 - **行业领先的可靠性**：覆盖 96% 的网页，包括重度 JS 渲染的页面 —— 无需代理烦恼，直接获取干净数据（[查看基准测试](https://www.firecrawl.dev/blog/the-worlds-best-web-data-api-v25)）

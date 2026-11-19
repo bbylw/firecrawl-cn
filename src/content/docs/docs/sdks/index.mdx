@@ -1,0 +1,98 @@
+---
+title: SDK 总览
+description: Firecrawl 的官方与社区 SDK：Python、Node.js、Java、Elixir、Rust 和 Go。
+sidebar:
+  order: 3
+  label: SDK 总览
+  group:
+    label: SDK
+---
+
+SDK 把 Firecrawl 的所有端点封装成你所用语言里的原生方法，省去手工拼 HTTP 请求的麻烦，其中最有用的一点是**自动处理异步任务的轮询**：爬取、批量抓取和智能体在 HTTP 层都需要“提交任务再反复查询状态”，而 SDK 会替你等待到完成并直接返回结果。
+
+<Render file="api-key" />
+
+## 可用的 SDK
+
+<CardGrid>
+<Card title="Python" href="/docs/sdks/python">pip install firecrawl-py，与 Pydantic 深度集成。</Card>
+<Card title="Node.js" href="/docs/sdks/nodejs">npm install firecrawl，TypeScript 友好，原生 async/await。</Card>
+<Card title="Java" href="/docs/sdks/java">通过 Gradle 或 Maven 从 JitPack 引入。</Card>
+<Card title="Elixir" href="/docs/sdks/elixir">mix 依赖，返回 `{:ok, response}` 元组。</Card>
+<Card title="Rust" href="/docs/sdks/rust">异步客户端，配合 tokio 运行时使用。</Card>
+<Card title="Go（社区）" href="/docs/sdks/go">由社区维护，随主仓库一起发布。</Card>
+</CardGrid>
+
+## 对比
+
+| SDK | 安装标识 | 支持状态 | 备注 |
+| --- | --- | --- | --- |
+| [Python](/docs/sdks/python) | `firecrawl-py` | 官方 | 功能最全，可用 Pydantic 定义结构化输出 schema |
+| [Node.js](/docs/sdks/nodejs) | `firecrawl` | 官方 | 适合浏览器与 Node 服务，异步接口 |
+| [Java](/docs/sdks/java) | `com.github.firecrawl:firecrawl-java-sdk` | 官方 | 经 JitPack 分发 |
+| [Elixir](/docs/sdks/elixir) | `firecrawl` | 官方 | Hex 包，返回元组风格结果 |
+| [Rust](/docs/sdks/rust) | `firecrawl` | 官方 | crates.io 发布，需 tokio |
+| [Go](/docs/sdks/go) | 见仓库目录 | 社区 | 位于主仓库 `apps/go-sdk` |
+
+## 统一的调用模型
+
+所有 SDK 都遵循同一套概念，方法与[功能概览](/docs/features)里的端点一一对应：
+
+| 能力 | 方法 | 端点 |
+| --- | --- | --- |
+| 搜索 | `search` | `POST /v2/search` |
+| 抓取 | `scrape` | `POST /v2/scrape` |
+| 交互 | `interact` | `POST /v2/scrape/{scrapeId}/interact` |
+| 智能体 | `agent` | `POST /v2/agent` |
+| 爬取 | `crawl` | `POST /v2/crawl` |
+| 映射 | `map` | `POST /v2/map` |
+| 批量抓取 | `batch_scrape` / `batchScrape` | `POST /v2/batch/scrape` |
+
+初始化时传入 API 密钥（或读取 `FIRECRAWL_API_KEY` 环境变量），之后各方法接受与 HTTP 请求体同名的参数。
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+```
+
+</TabItem>
+<TabItem label="Java">
+
+```java
+FirecrawlClient client = new FirecrawlClient(
+    System.getenv("FIRECRAWL_API_KEY"), null, null
+);
+```
+
+</TabItem>
+</Tabs>
+
+## 轮询由谁负责
+
+```python
+# 爬取是异步任务，但这里直接拿到完整结果
+docs = app.crawl("https://docs.firecrawl.dev", limit=50)
+for doc in docs.data:
+    print(doc.metadata.source_url)
+```
+
+同一个操作用 cURL 需要两次调用（创建任务 + 查询状态）和一个轮询循环，见[爬取 Crawl](/docs/features/crawl)。若你更希望自行控制等待策略，也可以绕过 SDK 直接调用 HTTP 接口。
+
+## 另见
+
+- [快速开始](/docs/quickstart)：安装与第一次抓取
+- [Skill（技能）](/docs/agents/skill)：让 AI 智能体通过 CLI 使用 Firecrawl
+- [API 参考](https://docs.firecrawl.dev/api-reference/introduction)：完整的请求与响应字段

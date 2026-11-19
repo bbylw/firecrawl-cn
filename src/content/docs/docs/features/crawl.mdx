@@ -1,0 +1,102 @@
+---
+title: 爬取 Crawl
+description: 一个请求抓取整个网站，返回所有页面的内容。
+sidebar:
+  order: 5
+  label: 爬取
+---
+
+爬取端点（`POST /v2/crawl`）从入口 URL 出发发现同站链接，并把每个页面抓成 LLM 就绪的内容。想给知识库、RAG 索引或文档站构建语料时，一个请求就够了，不需要自己实现链接发现、并发控制和重试。
+
+## 启动爬取
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/crawl' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://docs.firecrawl.dev",
+    "limit": 100,
+    "scrapeOptions": {
+      "formats": ["markdown"]
+    }
+  }'
+```
+
+请求立即返回一个任务 ID，而不是结果本身：
+
+```json title="响应"
+{
+  "success": true,
+  "id": "123-456-789",
+  "url": "https://api.firecrawl.dev/v2/crawl/123-456-789"
+}
+```
+
+`scrapeOptions` 会把参数透传给每个页面的抓取请求，例如这里用 `formats` 指定只要 Markdown。
+
+## 检查爬取状态
+
+用上一步返回的 ID 轮询任务：
+
+```bash
+curl -X GET 'https://api.firecrawl.dev/v2/crawl/123-456-789' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY'
+```
+
+任务完成后，状态接口返回进度和已抓取的页面数据：
+
+```json title="完成时的响应"
+{
+  "status": "completed",
+  "total": 50,
+  "completed": 50,
+  "creditsUsed": 50,
+  "data": [
+    {
+      "markdown": "# Page Title\n\nContent...",
+      "metadata": {"title": "Page Title", "sourceURL": "https://..."}
+    }
+  ]
+}
+```
+
+任务进行中时 `status` 不是 `completed`，`data` 里则是已经完成的部分结果，你可以边爬边消费。`total` 与 `completed` 用于展示进度，`creditsUsed` 表示本次任务消耗的额度。
+
+<Aside type="tip" title="SDK 会自动轮询">
+直接用 HTTP 时你需要自己循环查询状态。[SDK](/docs/sdks) 封装了这一步：调用即阻塞到任务完成（或在异步模式下提供等待辅助），因此体验更好。
+</Aside>
+
+Python 的等价写法：
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+docs = app.crawl("https://docs.firecrawl.dev", limit=50)
+for doc in docs.data:
+    print(doc.metadata.source_url, doc.markdown[:100])
+```
+
+## 能力
+
+- **一个请求覆盖整站**：自动发现并抓取站点下的 URL
+- **可控规模**：用 `limit` 限制页面数量，控制耗时与额度
+- **复用抓取参数**：`scrapeOptions` 对所有页面生效
+- **进度可查**：`status`、`total`、`completed`、`creditsUsed` 便于展示与计费核对
+- **增量消费**：任务未完成时也能读到已完成的结果
+
+## 常用参数
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `url` | string | 爬取的入口 URL，必填 |
+| `limit` | number | 最多抓取多少个页面 |
+| `scrapeOptions` | object | 传给每个页面抓取请求的参数，例如 `formats` |
+
+## 另见
+
+- [映射 Map](/docs/features/map)：先只要 URL 列表，看清站点结构再决定抓哪些
+- [批量抓取 Batch Scrape](/docs/features/batch-scrape)：URL 已经确定好了，跳过发现阶段
+- [抓取 Scrape](/docs/features/scrape)：单个页面

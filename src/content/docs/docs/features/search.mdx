@@ -1,0 +1,98 @@
+---
+title: 搜索 Search
+description: 搜索网页，并直接取回每条搜索结果的完整页面内容。
+sidebar:
+  order: 1
+  label: 搜索
+---
+
+搜索端点（`POST /v2/search`）在一次调用里完成“找来源”和“取内容”两件事：它检索全网，然后把命中的页面抓成干净的 Markdown 一并返回。当你还不知道数据具体在哪个站点上时，用它作为流程的第一步最合适。
+
+## 示例
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+search_result = app.search("firecrawl", limit=5)
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+
+await app.search("firecrawl", { limit: 5 });
+```
+
+</TabItem>
+<TabItem label="cURL">
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/search' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "firecrawl",
+    "limit": 5
+  }'
+```
+
+</TabItem>
+<TabItem label="CLI">
+
+```bash
+firecrawl search "firecrawl" --limit 5
+```
+
+</TabItem>
+</Tabs>
+
+## 响应
+
+返回结果列表，每条包含来源 URL、标题和整页 Markdown 正文。
+
+```json title="输出"
+[
+  {
+    "url": "https://firecrawl.dev",
+    "title": "Firecrawl",
+    "markdown": "Turn websites into..."
+  },
+  {
+    "url": "https://docs.firecrawl.dev",
+    "title": "Firecrawl Docs",
+    "markdown": "# Getting Started..."
+  }
+]
+```
+
+## 能力
+
+- **一次调用完成检索与抓取**：不需要先搜索再对每个结果单独调用[抓取](/docs/features/scrape)
+- **完整正文**：返回页面内容而不只是摘要，可直接拼进上下文或写入向量库
+- **可控结果数量**：用 `limit` 控制抓取多少条，兼顾 Token 成本与覆盖率
+- **LLM 友好**：正文为干净 Markdown，Token 占用显著低于原始 HTML
+- **同源鉴权**：与其他端点共用 API 密钥与输出格式
+
+## 常用参数
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `query` | string | 搜索关键词，必填 |
+| `limit` | number | 返回并抓取的搜索结果条数 |
+
+全部可用参数（例如来源类型、结果格式等）请以 [API 参考](https://docs.firecrawl.dev/api-reference/introduction) 为准，也可以在 [playground](https://firecrawl.dev/playground) 里直接调请求看响应。
+
+## 另见
+
+- [抓取 Scrape](/docs/features/scrape)：已知 URL 时直接取内容
+- [映射 Map](/docs/features/map)：在单个站点内枚举 URL
+- [智能体 Agent](/docs/features/agent)：连查询都不想自己写时，用自然语言描述需求

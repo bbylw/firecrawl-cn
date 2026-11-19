@@ -1,0 +1,51 @@
+---
+title: MCP
+description: 通过 MCP 把任何兼容客户端连接到 Firecrawl 的网页搜索、抓取与交互能力。
+sidebar:
+  order: 2
+  label: MCP
+---
+
+MCP（Model Context Protocol）让任何兼容的客户端都能调用外部工具。Firecrawl 提供 MCP 服务器，几秒钟即可把你的智能体接到网页上：无需自定义集成代码，模型就能自己决定何时搜索、抓取或爬取。
+
+## 配置
+
+在客户端的 MCP 配置中加入下面这段，把 `fc-YOUR_API_KEY` 换成你自己的密钥：
+
+```json title="mcpServers 配置"
+{
+  "mcpServers": {
+    "firecrawl-mcp": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+`command` 与 `args` 让客户端通过 `npx` 直接拉起 `firecrawl-mcp` 包，首次运行时自动下载，不需要全局安装。
+
+## 生效方式
+
+保存配置后重启客户端，它会列出 Firecrawl 提供的工具。此后用自然语言提问即可，例如“把这份文档站的页面抓成 Markdown”或“搜一下这个库的最新版本并读取其 changelog”，由模型自行挑选合适的工具。
+
+<Aside type="tip" title="密钥安全">
+`env` 里的密钥会写进客户端配置文件。请把该文件加入 `.gitignore`，或改用客户端支持的环境变量引用方式。
+</Aside>
+
+## 可用能力
+
+MCP 服务器覆盖 Firecrawl 的主要端点，包括[搜索](/docs/features/search)、[抓取](/docs/features/scrape)、[爬取](/docs/features/crawl)、[映射](/docs/features/map)、[批量抓取](/docs/features/batch-scrape)与[智能体](/docs/features/agent)。每个工具的具体参数见服务器仓库文档。
+
+## 下一步
+
+- 服务器实现、工具清单与更新：[firecrawl-mcp-server](https://github.com/firecrawl/firecrawl-mcp-server)
+- 集成总览与更多平台：[集成](/docs/integrations)
+
+## 另见
+
+- [Skill 技能](/docs/agents/skill)：改用 CLI 技能文件接入
+- [智能体入门](/docs/agents/onboarding)：让智能体自行完成接入

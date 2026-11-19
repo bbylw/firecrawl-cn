@@ -1,0 +1,53 @@
+---
+title: Skill 技能
+description: 用一条命令为 Claude Code、Antigravity、OpenCode 等智能体安装 Firecrawl CLI 与技能文件。
+sidebar:
+  order: 1
+  label: Skill 技能
+---
+
+Skill 把 Firecrawl CLI 和使用说明一起装进你的智能体环境，让它无需你写胶水代码就能获取实时网页数据。安装只需要一条命令。
+
+## 安装
+
+```bash
+npx -y firecrawl-cli@latest init --all --browser
+```
+
+`--all` 会把技能文件安装到所有被识别到的智能体客户端，`--browser` 启用与浏览器交互相关的能力。
+
+## 重启你的智能体
+
+安装完成后**重启智能体**，让它重新加载技能定义，之后你就可以直接用自然语言要求它抓取、搜索或爬取网页。
+
+<Aside type="caution" title="别跳过重启">
+技能清单在会话启动时读取。如果安装后智能体仍然说它无法访问网络，多半是还没重启。
+</Aside>
+
+## 支持的客户端
+
+- [Claude Code](https://claude.ai/code)
+- [Antigravity](https://antigravity.google)
+- [OpenCode](https://opencode.ai)
+
+以及其他能读取 CLI 技能文件的智能体环境。
+
+## 使用方式
+
+装好之后，CLI 本身就是智能体的工具箱，人也可以直接在终端里用同一套命令：
+
+```bash
+firecrawl scrape https://firecrawl.dev
+firecrawl search "firecrawl" --limit 5
+firecrawl interact exec --prompt "Search for 'mechanical keyboard'"
+```
+
+## 下一步
+
+所有可用命令、参数与技能文件写法见 [Skill + CLI 文档](https://docs.firecrawl.dev/sdks/cli)；CLI Skills 的额外说明见 [firecrawl/cli 仓库](https://github.com/firecrawl/cli#agent-skills)。
+
+## 另见
+
+- [MCP](/docs/agents/mcp)：更通用的客户端接入方式
+- [智能体入门](/docs/agents/onboarding)：让智能体自己完成注册与接入
+- [交互 Interact](/docs/features/interact)：CLI 背后的交互能力

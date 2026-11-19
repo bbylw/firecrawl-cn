@@ -1,0 +1,105 @@
+---
+title: 抓取 Scrape
+description: 把任意 URL 转换成 Markdown、HTML、截图或结构化 JSON，包括重度 JS 渲染的页面。
+sidebar:
+  order: 2
+  label: 抓取
+---
+
+抓取端点（`POST /v2/scrape`）把任意网页转换成 LLM 就绪的数据。你只需要给出 URL，代理轮换、JS 渲染、内容抽取、去噪与格式转换都由 Firecrawl 处理，因此重度依赖脚本渲染的页面同样能拿到干净正文。
+
+## 示例
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+result = app.scrape('firecrawl.dev')
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+
+await app.scrape('firecrawl.dev');
+```
+
+</TabItem>
+<TabItem label="cURL">
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/scrape' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "firecrawl.dev"
+  }'
+```
+
+</TabItem>
+<TabItem label="CLI">
+
+```bash
+firecrawl scrape https://firecrawl.dev
+firecrawl https://firecrawl.dev --only-main-content
+```
+
+</TabItem>
+</Tabs>
+
+## 响应
+
+默认返回页面正文的 Markdown 版本，可直接送入模型上下文。
+
+```markdown title="输出"
+# Firecrawl
+
+Firecrawl 帮助 AI 系统搜索、抓取和交互网页。
+
+## 功能
+- 搜索：在全网查找信息
+- 抓取：从任意页面获取干净数据
+- 交互：点击、导航和操作页面
+- 智能体：自主数据收集
+```
+
+响应中还带有 `metadata`，包括 `title`、`sourceURL`、`scrapeId` 等字段。其中 `scrapeId` 是这次抓取的标识，可以在[交互 Interact](/docs/features/interact) 中复用它，继续在同一个页面上操作。
+
+## 输出格式
+
+通过 `formats` 指定你需要的内容形态，可以同时请求多种：
+
+| 格式 | 说明 |
+| --- | --- |
+| Markdown | 干净正文，Token 最省，默认首选 |
+| HTML | 保留结构的原始页面 |
+| 截图 | 页面视觉快照，适合排版敏感或多模态场景 |
+| 结构化 JSON | 按你给的 schema 抽取字段，便于直接入库 |
+
+```python
+result = app.scrape("https://firecrawl.dev", formats=["markdown"])
+print(result.markdown)
+```
+
+## 能力
+
+- **高覆盖率**：覆盖 96% 的网页，包括重度 JS 渲染的页面
+- **低延迟**：数百万页面的 P95 延迟仅 3.4 秒，可用于实时链路
+- **零配置**：自动处理代理、编排、速率限制以及被 JS 拦截的内容
+- **媒体解析**：可以直接抓取网络上托管的 PDF、DOCX 等文件并提取内容
+- **主内容提取**：去掉导航、页脚等噪声，只留正文
+- **可继续交互**：抓取后用 `scrapeId` 接着点击、输入和滚动
+
+## 另见
+
+- [批量抓取 Batch Scrape](/docs/features/batch-scrape)：一次提交大量已知 URL
+- [爬取 Crawl](/docs/features/crawl)：不确定有哪些 URL 时，直接爬整站
+- [交互 Interact](/docs/features/interact)：内容需要操作页面后才会出现

@@ -1,0 +1,99 @@
+---
+title: Elixir SDK
+description: 在 mix 项目中引入 Firecrawl 的 Elixir SDK，并调用抓取、爬取、搜索与映射。
+sidebar:
+  order: 4
+  label: Elixir
+---
+
+Elixir SDK 以 `Firecrawl` 模块暴露各端点，函数名描述的是“做什么”，返回 `{:ok, response}` 或 `{:error, reason}` 元组，符合 Elixir 的惯例，可以直接接进 `with` 和管道。
+
+## 安装
+
+在 `mix.exs` 中添加依赖：
+
+```elixir
+def deps do
+  [
+    {:firecrawl, "~> 1.0"}
+  ]
+end
+```
+
+然后拉取依赖：
+
+```bash
+mix deps.get
+```
+
+## 抓取 URL
+
+```elixir
+# 抓取 URL
+{:ok, response} = Firecrawl.scrape_and_extract_from_url(
+  url: "https://firecrawl.dev",
+  formats: ["markdown"]
+)
+```
+
+## 爬取网站
+
+```elixir
+# 爬取网站
+{:ok, response} = Firecrawl.crawl_urls(
+  url: "https://docs.firecrawl.dev",
+  limit: 50
+)
+```
+
+## 搜索网页
+
+```elixir
+# 搜索网页
+{:ok, response} = Firecrawl.search_and_scrape(
+  query: "best AI data tools 2024",
+  limit: 10
+)
+```
+
+## 映射 URL
+
+```elixir
+# 映射 URL
+{:ok, response} = Firecrawl.map_urls(url: "https://example.com")
+```
+
+## 方法对照
+
+| 端点 | Elixir 函数 |
+| --- | --- |
+| [抓取](/docs/features/scrape) | `Firecrawl.scrape_and_extract_from_url/1` |
+| [爬取](/docs/features/crawl) | `Firecrawl.crawl_urls/1` |
+| [搜索](/docs/features/search) | `Firecrawl.search_and_scrape/1` |
+| [映射](/docs/features/map) | `Firecrawl.map_urls/1` |
+
+参数以关键字形式传入，名称与 HTTP 请求体字段一致，例如 `url`、`query`、`limit`、`formats`。
+
+## 密钥管理
+
+Elixir SDK 从应用环境读取 API 密钥，推荐写到 `config/runtime.exs` 并从环境变量注入：
+
+```elixir
+import Config
+
+config :firecrawl,
+  api_key: System.get_env("FIRECRAWL_API_KEY")
+```
+
+```bash
+export FIRECRAWL_API_KEY="fc-YOUR_API_KEY"
+```
+
+<Aside type="note" title="错误处理">
+示例为了简洁直接匹配了 `{:ok, response}`。在生产代码里请同时处理 `{:error, reason}` 分支，或使用 `with` 组合多个调用。
+</Aside>
+
+## 另见
+
+- [SDK 总览](/docs/sdks)：其他语言的封装
+- [功能概览](/docs/features)：各端点的请求与响应结构

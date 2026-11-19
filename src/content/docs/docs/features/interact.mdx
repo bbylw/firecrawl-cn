@@ -1,0 +1,105 @@
+---
+title: 交互 Interact
+description: 抓取页面之后，用 AI 提示词或代码继续点击、输入、滚动并取回结果。
+sidebar:
+  order: 3
+  label: 交互
+---
+
+交互端点让抓取不再止步于“第一屏”。先用[抓取](/docs/features/scrape)拿到一个活的浏览器会话，再用自然语言提示词或代码在同一个页面上点击、滚动、输入、等待和按键，最后提取操作之后才出现的内容。适合搜索结果页、表单、分页、下拉加载、登录后才能看到的内容等场景。
+
+## 示例
+
+交互分两步：抓取页面得到 `scrapeId`，然后针对这个 `scrapeId` 连续下发指令。
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+result = app.scrape("https://amazon.com")
+scrape_id = result.metadata.scrape_id
+
+app.interact(scrape_id, prompt="Search for 'mechanical keyboard'")
+app.interact(scrape_id, prompt="Click the first result")
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+
+const result = await app.scrape("https://amazon.com");
+
+await app.interact(result.metadata.scrapeId, {
+  prompt: "Search for 'mechanical keyboard'"
+});
+await app.interact(result.metadata.scrapeId, {
+  prompt: "Click the first result"
+});
+```
+
+</TabItem>
+<TabItem label="cURL">
+
+```bash
+# 1. 抓取页面
+curl -X POST 'https://api.firecrawl.dev/v2/scrape' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://amazon.com"}'
+
+# 2. 与页面交互（使用第 1 步返回的 scrapeId）
+curl -X POST 'https://api.firecrawl.dev/v2/scrape/SCRAPE_ID/interact' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt": "Search for mechanical keyboard"}'
+```
+
+</TabItem>
+<TabItem label="CLI">
+
+```bash
+firecrawl scrape https://amazon.com
+firecrawl interact exec --prompt "Search for 'mechanical keyboard'"
+firecrawl interact exec --prompt "Click the first result"
+```
+
+</TabItem>
+</Tabs>
+
+## 响应
+
+```json title="输出"
+{
+  "success": true,
+  "output": "Keyboard available at $100",
+  "liveViewUrl": "https://liveview.firecrawl.dev/..."
+}
+```
+
+`output` 是本次操作后模型读到的内容文本；`liveViewUrl` 打开即可实时观看这个浏览器会话正在做什么，调试提示词时非常有用。
+
+## 能力
+
+- **提示词驱动**：用一句自然语言描述动作，不必自己写选择器和等待逻辑
+- **同一会话多步操作**：在同一个 `scrapeId` 上连续下发指令，页面状态会保留
+- **完整操作原语**：点击、滚动、输入、等待元素、发送按键
+- **实时观看**：`liveViewUrl` 展示真实的浏览器操作过程
+- **与抓取复用**：一次抓取即可反复交互，不必为每一步重新加载页面
+
+<Aside type="note" title="什么时候用交互">
+如果目标内容在页面加载后就已经存在，直接用[抓取](/docs/features/scrape)更省成本；只有当内容需要操作才会出现（搜索框、翻页、展开、登录后）才需要交互。如果连“该去哪个页面”都不确定，交给[智能体 Agent](/docs/features/agent) 更合适。
+</Aside>
+
+## 另见
+
+- [抓取 Scrape](/docs/features/scrape)：获取会话与初始内容
+- [智能体 Agent](/docs/features/agent)：由模型自主规划导航与取数
+- [Skill（技能）](/docs/agents/skill)：让你的 AI 智能体直接调用 CLI 完成交互

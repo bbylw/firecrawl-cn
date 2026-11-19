@@ -1,0 +1,62 @@
+---
+title: 批量抓取 Batch Scrape
+description: 一次提交多个已知 URL，异步并发抓取并统一取回结果。
+sidebar:
+  order: 7
+  label: 批量抓取
+---
+
+批量抓取端点（`POST /v2/batch/scrape`）接受一组已经确定的 URL，并发抓取它们，最后统一返回结果。当你已经知道要抓哪些页面 —— 例如来自[映射](/docs/features/map)的链接列表、数据库里的 URL、sitemap 或上一轮任务的输出 —— 用它比逐个调用[抓取](/docs/features/scrape)高效得多，也不需要自己写并发与重试。
+
+## 示例
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+job = app.batch_scrape([
+    "https://firecrawl.dev",
+    "https://docs.firecrawl.dev",
+    "https://firecrawl.dev/pricing"
+], formats=["markdown"])
+
+for doc in job.data:
+    print(doc.metadata.source_url)
+```
+
+`formats` 与单次抓取完全一致，会应用到这一批所有 URL。`job.data` 是文档列表，每个文档都带正文和用于溯源的元数据。
+
+## 异步特性
+
+与[爬取](/docs/features/crawl)一样，批量抓取是异步任务：请求提交后返回任务标识，任务在服务端并发执行，你再查询结果。
+
+- 直接用 HTTP 时，需要先提交再轮询任务状态，直到任务完成
+- 用 [SDK](/docs/sdks) 时轮询由 SDK 自动完成，调用返回的就是完整结果，上面的 Python 例子即如此
+- 单个 URL 抓取失败不会影响整批任务，成功页面的内容照常返回，便于你只重试失败项
+
+<Aside type="note" title="什么时候不用批量抓取">
+如果你只有一两个 URL，直接调用[抓取](/docs/features/scrape)延迟更低；如果你还不知道有哪些 URL，用[映射](/docs/features/map)发现链接，或用[爬取](/docs/features/crawl)让 Firecrawl 自动完成发现与抓取。
+</Aside>
+
+## 能力
+
+- **一次提交多个 URL**：把 N 次请求合并成一次任务
+- **服务端并发**：无需自己管理线程池、速率限制与代理
+- **统一输出格式**：`formats` 对整批生效，结果结构一致
+- **规模可扩展**：适合抓取数千个 URL 的语料构建与定期同步任务
+- **便于溯源**：每个文档都带来源 URL 等元数据
+
+## 与相关端点的区别
+
+| 端点 | 输入 | 是否发现链接 | 适合场景 |
+| --- | --- | --- | --- |
+| [抓取](/docs/features/scrape) | 单个 URL | 否 | 即时取一个页面 |
+| [批量抓取](/docs/features/batch-scrape) | URL 列表 | 否 | 已知大量 URL，并发取内容 |
+| [爬取](/docs/features/crawl) | 入口 URL | 是 | 整站内容，交给 Firecrawl 决定抓哪些 |
+| [映射](/docs/features/map) | 入口 URL | 是 | 只要链接清单 |
+
+## 另见
+
+- [SDK](/docs/sdks)：各语言中的批量抓取与轮询封装
+- [资源与合规](/docs/resources)：抓取前的 robots.txt 与责任说明

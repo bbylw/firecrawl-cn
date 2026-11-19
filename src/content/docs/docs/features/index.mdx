@@ -1,0 +1,83 @@
+---
+title: 功能概览
+description: Firecrawl 的七个端点：搜索、抓取、交互、智能体、爬取、映射与批量抓取。
+sidebar:
+  order: 2
+  label: 功能概览
+  group:
+    label: 核心功能
+---
+
+Firecrawl 的所有能力都收敛到七个端点上。它们共享同一套鉴权方式和同一套输出格式，你可以按需求组合：先用[搜索](/docs/features/search)或[映射](/docs/features/map)找到来源，再用[抓取](/docs/features/scrape)或[爬取](/docs/features/crawl)取回内容，必要时用[交互](/docs/features/interact)操作页面；如果你只想描述需求而不想管理 URL，交给[智能体](/docs/features/agent)。
+
+<CardGrid>
+<Card title="搜索 Search" href="/docs/features/search">搜索网页并获取搜索结果的完整页面内容。</Card>
+<Card title="抓取 Scrape" href="/docs/features/scrape">把任意 URL 转换成 Markdown、HTML、截图或结构化 JSON。</Card>
+<Card title="交互 Interact" href="/docs/features/interact">抓取页面后，用 AI 提示词或代码继续操作页面。</Card>
+<Card title="智能体 Agent" href="/docs/features/agent">描述你的需求，由 AI 智能体自主搜索、导航并取回数据。</Card>
+<Card title="爬取 Crawl" href="/docs/features/crawl">一个请求抓取网站下的所有 URL。</Card>
+<Card title="映射 Map" href="/docs/features/map">即时发现网站上的所有 URL。</Card>
+<Card title="批量抓取 Batch Scrape" href="/docs/features/batch-scrape">异步提交一批已知 URL 同时抓取。</Card>
+<Card title="SDK" href="/docs/sdks">Python、Node.js、Java 等多语言封装，自动处理轮询。</Card>
+</CardGrid>
+
+## 端点一览
+
+| 端点 | 方法与路径 | 是否异步 | 典型用途 |
+| --- | --- | --- | --- |
+| [搜索](/docs/features/search) | `POST /v2/search` | 否 | 还不知道页面在哪，需要先找来源 |
+| [抓取](/docs/features/scrape) | `POST /v2/scrape` | 否 | 已知单个 URL，要干净内容 |
+| [交互](/docs/features/interact) | `POST /v2/scrape/{scrapeId}/interact` | 否 | 需要点击、输入、翻页后才能拿到数据 |
+| [智能体](/docs/features/agent) | `POST /v2/agent` | 是 | 用自然语言描述要收集的数据 |
+| [爬取](/docs/features/crawl) | `POST /v2/crawl` | 是 | 整站内容入库或构建语料 |
+| [映射](/docs/features/map) | `POST /v2/map` | 否 | 只要 URL 列表，速度极快 |
+| [批量抓取](/docs/features/batch-scrape) | `POST /v2/batch/scrape` | 是 | 已有大量 URL，一次提交并发抓取 |
+
+## 鉴权与约定
+
+每个请求都需要带上 Bearer Token，密钥即你在 [firecrawl.dev](https://firecrawl.dev) 控制台创建的 API 密钥。
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/scrape' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "firecrawl.dev"
+  }'
+```
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+```
+
+</TabItem>
+<TabItem label="CLI">
+
+一条命令即可安装 CLI 与智能体 Skill，详见 [Skill（技能）](/docs/agents/skill)。
+
+```bash
+npx -y firecrawl-cli@latest init --all --browser
+```
+
+</TabItem>
+</Tabs>
+
+<Aside type="note" title="输出格式">
+绝大多数端点都支持通过 `formats` 指定输出，例如 Markdown、HTML、截图和结构化 JSON。默认输出为干净的 Markdown，Token 占用更低，也更适合直接交给模型。
+</Aside>
+
+完整参数请以 [API 参考](https://docs.firecrawl.dev/api-reference/introduction) 为准，各端点页面都链接到对应的参考条目。

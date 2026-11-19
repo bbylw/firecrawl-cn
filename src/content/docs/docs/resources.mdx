@@ -1,0 +1,49 @@
+---
+title: 资源与合规
+description: Firecrawl 的文档、API 参考、playground 与更新日志入口，以及抓取时的 robots.txt 与责任说明。
+sidebar:
+  order: 7
+  label: 资源与合规
+---
+
+这里是所有官方入口的汇总，以及使用 Firecrawl 时必须了解的责任边界。
+
+## 官方资源
+
+- [文档](https://docs.firecrawl.dev)：各端点、参数与最佳实践的完整说明
+- [API 参考](https://docs.firecrawl.dev/api-reference/introduction)：请求体、响应字段与错误码
+- [Playground](https://firecrawl.dev/playground)：在浏览器里直接调请求、看真实响应，不需要写代码
+- [更新日志](https://firecrawl.dev/changelog)：新功能、端点变更与模型更新
+
+## 项目与社区
+
+- [GitHub 仓库](https://github.com/firecrawl/firecrawl)：源码、issue 与讨论
+- [Discord](https://discord.gg/firecrawl)：提问与经验分享
+- [X](https://twitter.com/firecrawl) 与 [LinkedIn](https://www.linkedin.com/company/104100957)：产品与博客更新
+- [博客与基准测试](https://www.firecrawl.dev/blog/the-worlds-best-web-data-api-v25)：覆盖率与延迟数据的出处
+
+## 站点内导航
+
+- [简介](/docs)与[快速开始](/docs/quickstart)
+- [功能概览](/docs/features)：七个端点的示例与响应
+- [SDK](/docs/sdks)：Python、Node.js、Java、Elixir、Rust 与社区 Go
+- [智能体集成](/docs/agents)：Skill、MCP、智能体入门
+- [集成](/docs/integrations)与[开源与自托管](/docs/self-host)
+
+## 合规与责任
+
+<Aside type="caution" title="最终用户责任">
+**最终用户有责任在抓取时遵守网站政策。** 建议用户遵守目标站点的隐私政策和使用条款。默认情况下，Firecrawl 会遵守 robots.txt 指令；使用 Firecrawl 即表示你同意遵守这些条件。
+</Aside>
+
+实践上的几点提醒：
+
+- 抓取前确认你对目标数据的使用是被允许的，尤其是需要登录才能访问的内容
+- 尊重 robots.txt：默认行为由它约束，若要偏离，请先确认目标站点的政策与你的法律义务
+- 控制频率：把 `limit` 等参数设在你真正需要的范围，避免给目标站点造成不必要的压力
+- 谨慎存储个人数据：抓到的页面可能包含个人信息，落库前明确保留期限与处理依据
+- 注明来源：把响应里的 `metadata`（标题、来源 URL）随内容一起保存，便于引用与审计
+
+<Aside type="note" title="本页是中文文档">
+本站是 Firecrawl 的中文文档，内容与英文官方文档存在更新时差。字段级细节请以 [API 参考](https://docs.firecrawl.dev/api-reference/introduction) 为准。
+</Aside>

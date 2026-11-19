@@ -1,0 +1,127 @@
+---
+title: 智能体 Agent
+description: 用自然语言描述需求，由 AI 智能体自主搜索、导航并从网页取回数据，无需提供 URL。
+sidebar:
+  order: 4
+  label: 智能体
+---
+
+智能体端点（`POST /v2/agent`）是从网页获取数据的最简单方式：描述你要什么，Firecrawl 的 AI 智能体就会自己搜索、导航、翻页并检索数据，你不需要提前知道 URL。它是 `/extract` 端点的升级版 —— 更快、更可靠，并且不要求你提供来源地址。
+
+## 示例
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/agent' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "prompt": "Find the pricing plans for Notion"
+  }'
+```
+
+响应：
+
+```json title="响应"
+{
+  "success": true,
+  "data": {
+    "result": "Notion offers the following pricing plans:\n\n1. Free - $0/month...\n2. Plus - $10/seat/month...\n3. Business - $18/seat/month...",
+    "sources": ["https://www.notion.so/pricing"]
+  }
+}
+```
+
+`data.result` 是收集到的答案，`data.sources` 列出实际取数的来源页面，方便你溯源和引用。
+
+<Aside type="note" title="异步任务">
+智能体任务需要模型多步执行，因此耗时明显长于一次抓取。用 HTTP 调用时要预留足够的等待时间；用 [SDK](/docs/sdks) 则会自动处理轮询。
+</Aside>
+
+## 结构化输出
+
+给智能体一个 schema，它就会按你的字段返回 JSON。Python SDK 直接接受 Pydantic 模型：
+
+```python
+from firecrawl import Firecrawl
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+class Founder(BaseModel):
+    name: str = Field(description="Full name of the founder")
+    role: Optional[str] = Field(None, description="Role or position")
+
+class FoundersSchema(BaseModel):
+    founders: List[Founder] = Field(description="List of founders")
+
+result = app.agent(
+    prompt="Find the founders of Firecrawl",
+    schema=FoundersSchema
+)
+
+print(result.data)
+```
+
+输出：
+
+```json title="输出"
+{
+  "founders": [
+    {"name": "Eric Ciarla", "role": "Co-founder"},
+    {"name": "Nicolas Camara", "role": "Co-founder"},
+    {"name": "Caleb Peffer", "role": "Co-founder"}
+  ]
+}
+```
+
+## 可选：限定 URL 范围
+
+如果你已经知道来源，可以用 `urls` 把智能体限制在指定页面里，减少无关检索、加快速度：
+
+```python
+result = app.agent(
+    urls=["https://docs.firecrawl.dev", "https://firecrawl.dev/pricing"],
+    prompt="Compare the features and pricing information"
+)
+```
+
+## 模型选择
+
+智能体提供两个模型，按成本和任务复杂度取舍：
+
+| 模型 | 成本 | 适用场景 |
+| --- | --- | --- |
+| `spark-1-mini`（默认） | 便宜 60% | 大多数任务 |
+| `spark-1-pro` | 标准价格 | 复杂研究、关键数据收集 |
+
+```python
+result = app.agent(
+    prompt="Compare enterprise features across Firecrawl, Apify, and ScrapingBee",
+    model="spark-1-pro"
+)
+```
+
+**何时使用 Pro：**
+
+- 跨多个网站比较数据
+- 从导航复杂或需要认证的网站提取数据
+- 智能体需要探索多条路径的研究任务
+- 准确性至关重要的关键数据
+
+关于 Spark 模型的更多细节，请参阅 [Agent 文档](https://docs.firecrawl.dev/features/agent)。
+
+## 能力
+
+- **无需 URL**：只描述需求，智能体自己找来源
+- **自主导航**：搜索、进入页面、翻页、跟链接，直到取到数据
+- **结构化结果**：用 schema 直接得到可入库的 JSON
+- **来源可溯**：响应包含实际使用的来源页面
+- **范围可控**：可选 `urls` 把任务限定在指定站点或页面
+
+## 另见
+
+- [搜索 Search](/docs/features/search)：你自己写查询，只要结果内容
+- [抓取 Scrape](/docs/features/scrape)：来源已知的单个页面
+- [交互 Interact](/docs/features/interact)：需要精确控制每一步页面操作
+- [SDK](/docs/sdks)：在 Python、Node.js 等语言中调用智能体

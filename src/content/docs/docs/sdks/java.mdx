@@ -1,0 +1,103 @@
+---
+title: Java SDK
+description: 通过 Gradle 或 Maven 引入 Firecrawl 的 Java SDK，并调用抓取、智能体、爬取与搜索。
+sidebar:
+  order: 3
+  label: Java
+---
+
+Java SDK 的客户端类为 `FirecrawlClient`，通过 JitPack 分发，因此除了 Maven Central 还需要添加 JitPack 仓库。与 Node.js、Python 一样，它会自动处理异步任务的轮询。
+
+## 安装
+
+Gradle（Groovy DSL）：
+
+```groovy
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.firecrawl:firecrawl-java-sdk:2.0'
+}
+```
+
+Maven：
+
+```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+
+<dependency>
+    <groupId>com.github.firecrawl</groupId>
+    <artifactId>firecrawl-java-sdk</artifactId>
+    <version>2.0</version>
+</dependency>
+```
+
+安装方式的最新说明见 [Java SDK 安装文档](https://docs.firecrawl.dev/sdks/java#installation)。
+
+## 快速上手
+
+```java
+import dev.firecrawl.client.FirecrawlClient;
+import dev.firecrawl.model.*;
+
+FirecrawlClient client = new FirecrawlClient(
+    System.getenv("FIRECRAWL_API_KEY"), null, null
+);
+
+// 抓取单个 URL
+ScrapeParams scrapeParams = new ScrapeParams();
+scrapeParams.setFormats(new String[]{"markdown"});
+FirecrawlDocument doc = client.scrapeURL("https://firecrawl.dev", scrapeParams);
+System.out.println(doc.getMarkdown());
+
+// 使用 Agent 进行自主数据收集
+AgentParams agentParams = new AgentParams("Find the founders of Stripe");
+AgentResponse start = client.createAgent(agentParams);
+AgentStatusResponse result = client.getAgentStatus(start.getId());
+System.out.println(result.getData());
+
+// 爬取网站（轮询直到完成）
+CrawlParams crawlParams = new CrawlParams();
+crawlParams.setLimit(50);
+CrawlStatusResponse job = client.crawlURL("https://docs.firecrawl.dev", crawlParams, null, 10);
+for (FirecrawlDocument page : job.getData()) {
+    System.out.println(page.getMetadata().get("sourceURL"));
+}
+
+// 搜索网页
+SearchParams searchParams = new SearchParams("best AI data tools 2024");
+searchParams.setLimit(10);
+SearchResponse results = client.search(searchParams);
+for (SearchResult r : results.getResults()) {
+    System.out.println(r.getTitle() + ": " + r.getUrl());
+}
+```
+
+## 调用约定
+
+- 客户端构造函数第一个参数是 API 密钥，示例中直接读取 `FIRECRAWL_API_KEY` 环境变量，另外两个参数为可选配置
+- 每个端点都有对应的参数对象，例如 `ScrapeParams`、`CrawlParams`、`SearchParams`，按 setter 逐项设置
+- 智能体是异步任务：先 `createAgent` 拿到任务 ID，再用 `getAgentStatus` 获取结果
+- `crawlURL` 的最后两个参数用于配置并发数与轮询间隔，SDK 会等待任务完成
+
+## 密钥管理
+
+```bash
+export FIRECRAWL_API_KEY="fc-YOUR_API_KEY"
+```
+
+<Aside type="tip" title="提示">
+把密钥放在环境变量或密钥管理服务中，不要写进 `pom.xml`、`build.gradle` 或提交到仓库。
+</Aside>
+
+## 另见
+
+- [SDK 总览](/docs/sdks)：其他语言的封装
+- [智能体 Agent](/docs/features/agent)：`createAgent` 与 `getAgentStatus` 对应的端点行为
+- [爬取 Crawl](/docs/features/crawl)：轮询流程的细节

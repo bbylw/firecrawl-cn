@@ -1,0 +1,92 @@
+---
+title: Node.js SDK
+description: 安装并使用 Firecrawl 的 Node.js SDK，抓取、智能体、爬取与搜索的完整示例。
+sidebar:
+  order: 2
+  label: Node.js
+---
+
+Node.js SDK 的包名是 `firecrawl`，导出的客户端类为 `Firecrawl`。所有方法返回 Promise，异步任务的轮询由 SDK 自动完成。
+
+## 安装
+
+```bash
+npm install firecrawl
+```
+
+也可以用 pnpm 或 yarn：
+
+```bash
+pnpm add firecrawl
+yarn add firecrawl
+```
+
+## 快速上手
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: 'fc-YOUR_API_KEY' });
+
+// 抓取单个 URL
+const doc = await app.scrape('https://firecrawl.dev', { formats: ['markdown'] });
+console.log(doc.markdown);
+
+// 使用 Agent 进行自主数据收集
+const result = await app.agent({ prompt: 'Find the founders of Stripe' });
+console.log(result.data);
+
+// 爬取网站（自动等待完成）
+const docs = await app.crawl('https://docs.firecrawl.dev', { limit: 50 });
+docs.data.forEach(doc => {
+    console.log(doc.metadata.sourceURL, doc.markdown.substring(0, 100));
+});
+
+// 搜索网页
+const results = await app.search('best AI data tools 2024', { limit: 10 });
+results.data.web.forEach(result => {
+    console.log(`${result.title}: ${result.url}`);
+});
+```
+
+注意 Node.js 与 Python 的两处差异：方法名使用小驼峰（例如 `batchScrape`），文档元数据字段为 `sourceURL` 而非 Python 的 `source_url`。
+
+## 其他常用方法
+
+```js
+// 交互：先抓取，再用提示词操作页面
+const scraped = await app.scrape('https://amazon.com');
+await app.interact(scraped.metadata.scrapeId, {
+  prompt: "Search for 'mechanical keyboard'"
+});
+
+// 映射：只要 URL 列表
+const links = await app.map('https://firecrawl.dev', { search: 'pricing' });
+
+// 批量抓取：一次提交多个已知 URL
+const job = await app.batchScrape([
+  'https://firecrawl.dev',
+  'https://docs.firecrawl.dev',
+  'https://firecrawl.dev/pricing'
+], { formats: ['markdown'] });
+```
+
+## 密钥管理
+
+把密钥放在环境变量中，避免提交到仓库：
+
+```bash
+export FIRECRAWL_API_KEY="fc-YOUR_API_KEY"
+```
+
+在代码里读取即可：
+
+```js
+const app = new Firecrawl({ apiKey: process.env.FIRECRAWL_API_KEY });
+```
+
+## 另见
+
+- [SDK 总览](/docs/sdks)：其他语言的封装
+- [搜索 Search](/docs/features/search)：返回结构与参数
+- [爬取 Crawl](/docs/features/crawl)：SDK 背后的异步流程

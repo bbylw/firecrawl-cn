@@ -1,0 +1,1431 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import CodeCard from "@/components/landing/CodeCard.astro";
+import Logo from "@/components/Logo.astro";
+import "@/styles/landing.css";
+
+/* ---------------- code samples ---------------- */
+
+const heroCode = `# 1. 安装 SDK
+$ pip install firecrawl-py
+
+# 2. 一行代码抓取任意网站
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+# 抓取
+result = app.scrape("firecrawl.dev")
+
+# 智能体自主收集数据
+data = app.agent(prompt="查找 Stripe 的创始人")
+print(data)  # → 已结构化`;
+
+const qs = {
+  search: {
+    py: `from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+search_result = app.search("firecrawl", limit=5)`,
+    node: `import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({apiKey: "fc-YOUR_API_KEY"});
+
+app.search("firecrawl", { limit: 5 })`,
+    curl: `curl -X POST 'https://api.firecrawl.dev/v2/search' \\
+-H 'Authorization: Bearer fc-YOUR_API_KEY' \\
+-H 'Content-Type: application/json' \\
+-d '{
+  "query": "firecrawl",
+  "limit": 5
+}'`,
+    cli: `firecrawl search "firecrawl" --limit 5`,
+    out: `[
+  {
+    "url": "https://firecrawl.dev",
+    "title": "Firecrawl",
+    "markdown": "Turn websites into..."
+  },
+  {
+    "url": "https://docs.firecrawl.dev",
+    "title": "Firecrawl Docs",
+    "markdown": "# Getting Started..."
+  }
+]`,
+  },
+  scrape: {
+    py: `from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+result = app.scrape('firecrawl.dev')`,
+    node: `import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+
+app.scrape('firecrawl.dev')`,
+    curl: `curl -X POST 'https://api.firecrawl.dev/v2/scrape' \\
+-H 'Authorization: Bearer fc-YOUR_API_KEY' \\
+-H 'Content-Type: application/json' \\
+-d '{
+  "url": "firecrawl.dev"
+}'`,
+    cli: `firecrawl scrape https://firecrawl.dev
+firecrawl https://firecrawl.dev --only-main-content`,
+    out: `# Firecrawl
+
+Firecrawl 帮助 AI 系统搜索、抓取和交互网页。
+
+## 功能
+- 搜索：在全网查找信息
+- 抓取：从任意页面获取干净数据
+- 交互：点击、导航和操作页面
+- 智能体：自主数据收集`,
+  },
+  interact: {
+    py: `from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+result = app.scrape("https://amazon.com")
+scrape_id = result.metadata.scrape_id
+
+app.interact(scrape_id, prompt="Search for 'mechanical keyboard'")
+app.interact(scrape_id, prompt="Click the first result")`,
+    node: `import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({apiKey: "fc-YOUR_API_KEY"});
+
+const result = await app.scrape("https://amazon.com");
+
+await app.interact(result.metadata.scrapeId, {
+  prompt: "Search for 'mechanical keyboard'"
+});
+await app.interact(result.metadata.scrapeId, {
+  prompt: "Click the first result"
+});`,
+    curl: `# 1. 抓取页面
+curl -X POST 'https://api.firecrawl.dev/v2/scrape' \\
+-H 'Authorization: Bearer fc-YOUR_API_KEY' \\
+-H 'Content-Type: application/json' \\
+-d '{"url": "https://amazon.com"}'
+
+# 2. 与页面交互（使用第 1 步返回的 scrapeId）
+curl -X POST 'https://api.firecrawl.dev/v2/scrape/SCRAPE_ID/interact' \\
+-H 'Authorization: Bearer fc-YOUR_API_KEY' \\
+-H 'Content-Type: application/json' \\
+-d '{"prompt": "Search for mechanical keyboard"}'`,
+    cli: `firecrawl scrape https://amazon.com
+firecrawl interact exec --prompt "Search for 'mechanical keyboard'"
+firecrawl interact exec --prompt "Click the first result"`,
+    out: `{
+  "success": true,
+  "output": "Keyboard available at $100",
+  "liveViewUrl": "https://liveview.firecrawl.dev/..."
+}`,
+  },
+};
+
+const agentCurl = `curl -X POST 'https://api.firecrawl.dev/v2/agent' \\
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \\
+  -H 'Content-Type: application/json' \\
+  -d '{
+    "prompt": "Find the pricing plans for Notion"
+  }'`;
+
+const agentOut = `{
+  "success": true,
+  "data": {
+    "result": "Notion offers the following pricing plans:\\n1. Free - $0/month...",
+    "sources": ["https://www.notion.so/pricing"]
+  }
+}`;
+
+const crawlCurl = `curl -X POST 'https://api.firecrawl.dev/v2/crawl' \\
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \\
+  -H 'Content-Type: application/json' \\
+  -d '{
+    "url": "https://docs.firecrawl.dev",
+    "limit": 100,
+    "scrapeOptions": {
+      "formats": ["markdown"]
+    }
+  }'`;
+
+const crawlOut = `{
+  "success": true,
+  "id": "123-456-789",
+  "url": "https://api.firecrawl.dev/v2/crawl/123-456-789"
+}`;
+
+const mapCurl = `curl -X POST 'https://api.firecrawl.dev/v2/map' \\
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \\
+  -H 'Content-Type: application/json' \\
+  -d '{"url": "https://firecrawl.dev"}'`;
+
+const batchPy = `from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-...")
+
+job = app.batch_scrape([
+    "https://firecrawl.dev",
+    "https://docs.firecrawl.dev",
+    "https://firecrawl.dev/pricing"
+], formats=["markdown"])`;
+
+const skillCmd = `npx -y firecrawl-cli@latest init \\
+  --all --browser`;
+
+const mcpJson = `{
+  "mcpServers": {
+    "firecrawl-mcp": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-YOUR_API_KEY"
+      }
+    }
+  }
+}`;
+
+const onboardingCmd = `curl -s https://firecrawl.dev/\\
+  agent-onboarding/SKILL.md`;
+
+const sdks: Record<string, { name: string; tag?: string; desc: string; installLabel: string; install: string; installLang: string; file: string; code: string; lang: string }> = {
+  python: {
+    name: "Python SDK",
+    desc: "最受欢迎的 SDK，适合数据科学、AI 应用和快速原型开发。类型提示完整，与 Pydantic 深度集成，自动处理异步轮询。",
+    installLabel: "安装", install: "pip install firecrawl-py", installLang: "bash",
+    file: "example.py", lang: "python",
+    code: `from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+# 抓取
+doc = app.scrape("https://firecrawl.dev", formats=["markdown"])
+print(doc.markdown)
+
+# 智能体
+result = app.agent(prompt="Find the founders of Stripe")
+
+# 爬取（自动等待完成）
+docs = app.crawl("https://docs.firecrawl.dev", limit=50)
+
+# 搜索
+results = app.search("best AI data tools 2024", limit=10)`,
+  },
+  node: {
+    name: "Node.js SDK",
+    desc: "为 JavaScript / TypeScript 打造，原生支持现代 ES 模块和 async/await。",
+    installLabel: "安装", install: "npm install firecrawl", installLang: "bash",
+    file: "example.js", lang: "js",
+    code: `import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: 'fc-YOUR_API_KEY' });
+
+// 抓取
+const doc = await app.scrape('https://firecrawl.dev', { formats: ['markdown'] });
+console.log(doc.markdown);
+
+// 智能体
+const result = await app.agent({ prompt: 'Find the founders of Stripe' });
+
+// 爬取（自动等待完成）
+const docs = await app.crawl('https://docs.firecrawl.dev', { limit: 50 });
+
+// 搜索
+const results = await app.search('best AI data tools 2024', { limit: 10 });`,
+  },
+  java: {
+    name: "Java SDK",
+    desc: "为企业级 Java 应用打造，支持 Gradle / Maven。",
+    installLabel: "build.gradle", install: `dependencies {
+  implementation 'com.github.firecrawl:firecrawl-java-sdk:2.0'
+}`, installLang: "groovy",
+    file: "Example.java", lang: "java",
+    code: `import dev.firecrawl.client.FirecrawlClient;
+import dev.firecrawl.model.*;
+
+FirecrawlClient client = new FirecrawlClient(
+    System.getenv("FIRECRAWL_API_KEY"), null, null
+);
+
+// 抓取
+ScrapeParams scrapeParams = new ScrapeParams();
+scrapeParams.setFormats(new String[]{"markdown"});
+FirecrawlDocument doc = client.scrapeURL("https://firecrawl.dev", scrapeParams);
+System.out.println(doc.getMarkdown());
+
+// 智能体
+AgentParams agentParams = new AgentParams("Find the founders of Stripe");
+AgentResponse start = client.createAgent(agentParams);
+
+// 搜索
+SearchParams searchParams = new SearchParams("best AI data tools 2024");
+searchParams.setLimit(10);
+SearchResponse results = client.search(searchParams);`,
+  },
+  elixir: {
+    name: "Elixir SDK",
+    desc: "为 Elixir / Phoenix 应用量身打造，拥抱函数式编程范式。",
+    installLabel: "mix.exs", install: `def deps do
+  [
+    {:firecrawl, "~> 1.0"}
+  ]
+end`, installLang: "elixir",
+    file: "example.ex", lang: "elixir",
+    code: `# 抓取 URL
+{:ok, response} = Firecrawl.scrape_and_extract_from_url(
+  url: "https://firecrawl.dev",
+  formats: ["markdown"]
+)
+
+# 爬取网站
+{:ok, response} = Firecrawl.crawl_urls(
+  url: "https://docs.firecrawl.dev",
+  limit: 50
+)
+
+# 搜索网页
+{:ok, response} = Firecrawl.search_and_scrape(
+  query: "best AI data tools 2024",
+  limit: 10
+)
+
+# 映射 URL
+{:ok, response} = Firecrawl.map_urls(url: "https://example.com")`,
+  },
+  rust: {
+    name: "Rust SDK",
+    desc: "高性能、内存安全，基于 tokio 异步运行时。",
+    installLabel: "Cargo.toml", install: `[dependencies]
+firecrawl = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }`, installLang: "toml",
+    file: "main.rs", lang: "rust",
+    code: `use firecrawl::{Client, ScrapeOptions, Format, CrawlOptions};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new("fc-YOUR_API_KEY")?;
+
+    // 抓取 URL
+    let document = client.scrape("https://firecrawl.dev", None).await?;
+    println!("{:?}", document.markdown);
+
+    // 爬取网站
+    let options = CrawlOptions { limit: Some(50), ..Default::default() };
+    let result = client.crawl("https://docs.firecrawl.dev", options).await?;
+    println!("Crawled {} pages", result.data.len());
+
+    // 搜索网页
+    let response = client.search("best web scraping tools 2024", None).await?;
+    println!("{:?}", response.data);
+
+    Ok(())
+}`,
+  },
+  go: {
+    name: "Go SDK",
+    tag: "社区",
+    desc: "由社区贡献，简洁易用的 Go 接口。",
+    installLabel: "安装", install: "go get github.com/firecrawl/firecrawl/apps/go-sdk", installLang: "bash",
+    file: "example.go", lang: "go",
+    code: `package main
+
+import (
+    "fmt"
+    firecrawl "github.com/firecrawl/firecrawl/apps/go-sdk"
+)
+
+func main() {
+    client := firecrawl.NewClient("fc-YOUR_API_KEY")
+
+    // 抓取
+    doc, _ := client.Scrape("https://firecrawl.dev", nil)
+    fmt.Println(doc.Markdown)
+}`,
+  },
+};
+
+const sdkTabs = [
+  { id: "python", label: "🐍 Python" },
+  { id: "node", label: "🟢 Node.js" },
+  { id: "java", label: "☕ Java" },
+  { id: "elixir", label: "💧 Elixir" },
+  { id: "rust", label: "🦀 Rust" },
+  { id: "go", label: "🔷 Go" },
+];
+
+const marqueeTools = ["Claude Code", "Antigravity", "OpenCode", "MCP 客户端", "Lovable", "Zapier", "n8n", "Firecrawl CLI"];
+
+const navLinks = [
+  { href: "#features", label: "功能" },
+  { href: "#endpoints", label: "端点" },
+  { href: "#quickstart", label: "快速开始" },
+  { href: "#agent", label: "智能体" },
+  { href: "#sdks", label: "SDK" },
+  { href: "#integrations", label: "集成" },
+  { href: "#opensource", label: "开源" },
+];
+---
+
+<BaseLayout
+  title="Firecrawl 🔥 大规模搜索、抓取和交互网页的 API"
+  description="Firecrawl 中文站点：网络上下文 API，查找来源、提取内容，转换为干净的 Markdown 或结构化数据，供你的智能体使用。开源，并提供托管服务。"
+>
+  <script is:inline>
+    (() => {
+      const setDark = () => {
+        document.documentElement.setAttribute("data-mode", "dark");
+        document.documentElement.style.colorScheme = "dark";
+      };
+      // This script only ships on the landing page, so running it means dark.
+      setDark();
+      if (window.__fcLandingTheme) return;
+      window.__fcLandingTheme = true;
+      // ClientRouter swaps: re-force dark only when the landing is the new page.
+      document.addEventListener("astro:after-swap", () => {
+        if (document.getElementById("landing-root")) setDark();
+      });
+    })();
+  </script>
+
+  <div id="landing-root" class="landing min-h-screen overflow-x-hidden">
+    <!-- ========== 导航栏 ========== -->
+    <nav class="nav-blur fixed top-0 inset-x-0 z-50">
+      <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <a href="#top" class="flex items-center gap-2 group">
+          <Logo class="h-6 w-6 text-fire-500 transition-transform group-hover:scale-110" />
+          <span class="font-bold text-lg tracking-tight text-ink-50">Firecrawl</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded border border-fire-500/30 text-fire-400 font-mono">中文</span>
+        </a>
+        <div class="landing-nav hidden lg:flex items-center gap-6 text-sm text-ink-300">
+          {navLinks.map((l) => (
+            <a href={l.href} data-spy={l.href.slice(1)} class="hover:text-fire-400 transition">{l.label}</a>
+          ))}
+          <a href="/docs" class="hover:text-fire-400 transition font-medium text-ink-100">文档</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="https://github.com/firecrawl/firecrawl" target="_blank" rel="noopener" class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-ink-700 text-ink-200 hover:border-ink-600 transition">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <span>Star</span>
+          </a>
+          <a href="https://firecrawl.dev" target="_blank" rel="noopener" class="btn-primary text-white text-sm font-medium px-4 py-1.5 rounded-lg">
+            免费开始
+          </a>
+          <button id="menu-btn" type="button" aria-label="打开菜单" aria-expanded="false" class="lg:hidden p-2 -mr-2 text-ink-300 hover:text-fire-400 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="mobile-menu" class="hidden lg:hidden border-t border-ink-800/60 px-6 py-4 space-y-1">
+        {navLinks.map((l) => (
+          <a href={l.href} class="block py-2 text-sm text-ink-300 hover:text-fire-400 transition">{l.label}</a>
+        ))}
+        <a href="/docs" class="block py-2 text-sm font-medium text-ink-100 hover:text-fire-400 transition">文档</a>
+      </div>
+    </nav>
+
+    <!-- ========== HERO ========== -->
+    <section id="top" class="relative min-h-screen flex items-center pt-16 overflow-hidden">
+      <div class="absolute inset-0 bg-grid opacity-50"></div>
+      <div class="absolute inset-0 bg-radial-fire"></div>
+      <div class="flame top-20 -left-20 animate-pulse-slow"></div>
+      <div class="flame bottom-0 -right-20 animate-pulse-slow" style="animation-delay: 1.5s;"></div>
+      <div class="flame top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] opacity-30"></div>
+      <canvas id="embers" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
+      <div class="relative max-w-7xl mx-auto px-6 py-20 w-full">
+        <div class="text-center max-w-4xl mx-auto">
+          <div class="reveal inline-flex items-center gap-2 px-3 py-1.5 mb-8 rounded-full glass text-xs text-ink-300">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            <span>已为 100,000+ 开发者和团队提供服务</span>
+          </div>
+
+          <h1 class="reveal text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6 text-ink-50">
+            <span class="text-gradient-fire">大规模</span>
+            <span>搜索、抓取和</span>
+            <br />
+            <span>交互</span>
+            <span class="text-gradient-fire">网页</span>
+            <span>的 API</span>
+            <span class="inline-block animate-flicker ml-2">🔥</span>
+          </h1>
+
+          <p class="reveal text-lg md:text-xl text-ink-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+            这是一款<span class="text-fire-400 font-medium">网络上下文 API</span>，可用于查找来源、提取内容，并将其转换为干净的 Markdown 或结构化数据，供你的智能体使用。
+            <span class="text-ink-400">开源，并提供托管服务。</span>
+          </p>
+
+          <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <a href="https://firecrawl.dev" target="_blank" rel="noopener" class="btn-primary text-white font-semibold px-7 py-3.5 rounded-xl flex items-center gap-2">
+              <span>免费开始</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+            <a href="/docs" class="glass text-ink-100 font-medium px-7 py-3.5 rounded-xl flex items-center gap-2 hover:border-fire-500/40 transition">
+              <svg class="w-5 h-5 text-fire-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              <span>阅读中文文档</span>
+            </a>
+          </div>
+
+          <!-- 终端预览 -->
+          <div class="reveal relative max-w-3xl mx-auto text-left">
+            <div class="absolute -inset-1 bg-gradient-to-r from-fire-500/30 via-fire-600/20 to-fire-500/30 rounded-2xl blur-xl"></div>
+            <CodeCard label="~/firecrawl-demo · python" code={heroCode} lang="python" dots live cursor class="relative" />
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-ink-500 text-xs flex flex-col items-center gap-1 animate-pulse">
+        <span>向下滚动探索</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+      </div>
+    </section>
+
+    <!-- ========== 信任指标 ========== -->
+    <section class="py-12 border-y border-ink-800/60">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div class="reveal">
+            <div class="text-4xl md:text-5xl font-black stat-num"><span data-count="96" data-suffix="%">96%</span></div>
+            <div class="text-sm text-ink-400 mt-1">网页覆盖率</div>
+          </div>
+          <div class="reveal">
+            <div class="text-4xl md:text-5xl font-black stat-num"><span data-count="3.4" data-decimals="1" data-suffix="s">3.4s</span></div>
+            <div class="text-sm text-ink-400 mt-1">P95 延迟</div>
+          </div>
+          <div class="reveal">
+            <div class="text-4xl md:text-5xl font-black stat-num"><span data-count="100" data-suffix="K+">100K+</span></div>
+            <div class="text-sm text-ink-400 mt-1">开发者使用</div>
+          </div>
+          <div class="reveal">
+            <div class="text-4xl md:text-5xl font-black stat-num">∞</div>
+            <div class="text-sm text-ink-400 mt-1">请求规模</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 生态 marquee ========== -->
+    <section class="py-10 border-b border-ink-800/60 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-6 mb-6 text-center text-xs uppercase tracking-widest text-ink-500">与你的 AI 工具链无缝协作</div>
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee-track">
+          {[...marqueeTools, ...marqueeTools].map((t) => (
+            <span class="flex items-center gap-2 text-ink-400 text-sm font-medium whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-fire-500/60"></span>{t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 为什么选择 Firecrawl ========== -->
+    <section id="features" class="py-24 relative scroll-mt-16">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="reveal text-center max-w-2xl mx-auto mb-16">
+          <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">为什么选择 Firecrawl</div>
+          <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+            为 <span class="text-gradient-fire">AI 时代</span> 而生的<br />网络数据基础设施
+          </h2>
+          <p class="text-ink-400 text-lg">从最棘手的 JS 渲染页面到大规模并发抓取，Firecrawl 帮你搞定所有繁琐细节。</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[
+            { t: "行业领先的可靠性", d: "覆盖 96% 的网页，包括重度 JS 渲染页面 —— 无需代理烦恼，直接获取干净数据。", icon: "M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" },
+            { t: "极速响应", d: "数百万页面的 P95 延迟仅为 3.4 秒，专为实时智能体和动态应用打造。", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
+            { t: "LLM 友好输出", d: "干净的 Markdown、结构化 JSON、截图等 —— 更少的 Token 消耗，更好的 AI 应用体验。", icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
+            { t: "处理繁琐事务", d: "自动轮换代理、编排、速率限制、JS 拦截内容等 —— 零配置开箱即用。", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
+            { t: "智能体就绪", d: "一条命令即可将 Firecrawl 连接到任何 AI 智能体或 MCP 客户端。", icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" },
+            { t: "媒体解析", d: "解析并提取网络上托管的 PDF、DOCX 等文件内容。", icon: "M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" },
+            { t: "交互操作", d: "在提取内容前，点击、滚动、输入、等待和按键 —— 真实浏览器交互。", icon: "M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" },
+            { t: "完全开源", d: "透明且协作开发 —— 加入我们的社区，一起打造更好的网络数据工具。", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" },
+            { t: "企业级安全", d: "默认遵守 robots.txt，内置合规机制，可放心用于生产环境。", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" },
+          ].map((f) => (
+            <div class="reveal card-hover glass rounded-2xl p-6">
+              <div class="feature-icon-wrap mb-4">
+                <svg class="w-6 h-6 text-fire-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d={f.icon}/></svg>
+              </div>
+              <h3 class="text-lg font-bold mb-2 text-ink-50">{f.t}</h3>
+              <p class="text-sm text-ink-400 leading-relaxed">{f.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 端点概览 ========== -->
+    <section id="endpoints" class="py-24 relative scroll-mt-16">
+      <div class="absolute inset-0 bg-radial-fire opacity-50"></div>
+      <div class="relative max-w-7xl mx-auto px-6">
+        <div class="reveal text-center max-w-2xl mx-auto mb-16">
+          <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">端点</div>
+          <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+            一个 API，<span class="text-gradient-fire">覆盖全场景</span>
+          </h2>
+          <p class="text-ink-400 text-lg">从单页抓取到全站爬取，Firecrawl 为每种需求都提供了专用端点。</p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="reveal glass rounded-2xl p-7 endpoint-glow relative">
+            <div class="flex items-center gap-2 mb-5">
+              <span class="text-xs font-mono px-2 py-0.5 rounded bg-fire-500/15 text-fire-400 border border-fire-500/20">CORE</span>
+              <h3 class="text-xl font-bold text-ink-50">核心端点</h3>
+            </div>
+            <div class="space-y-4">
+              {[
+                { href: "/docs/features/search", t: "搜索 (Search)", d: "搜索网页并获取搜索结果的完整页面内容", icon: "M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" },
+                { href: "/docs/features/scrape", t: "抓取 (Scrape)", d: "将任意 URL 转换为 Markdown、HTML、截图或结构化 JSON", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" },
+                { href: "/docs/features/interact", t: "交互 (Interact)", d: "抓取页面后，使用 AI 提示词或代码与其交互", icon: "M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" },
+              ].map((e) => (
+                <a href={e.href} class="block group">
+                  <div class="flex items-start gap-3 p-3 -mx-3 rounded-lg hover:bg-ink-800/50 transition">
+                    <div class="mt-0.5 w-8 h-8 rounded-md bg-gradient-to-br from-fire-500/30 to-fire-600/10 flex items-center justify-center shrink-0">
+                      <svg class="w-4 h-4 text-fire-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d={e.icon}/></svg>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-ink-100 group-hover:text-fire-400 transition">{e.t}</div>
+                      <div class="text-sm text-ink-400">{e.d}</div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div class="reveal glass rounded-2xl p-7 endpoint-glow relative">
+            <div class="flex items-center gap-2 mb-5">
+              <span class="text-xs font-mono px-2 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/20">MORE</span>
+              <h3 class="text-xl font-bold text-ink-50">更多功能</h3>
+            </div>
+            <div class="space-y-4">
+              {[
+                { href: "/docs/features/agent", t: "智能体 (Agent)", d: "自动化数据收集，只需描述你的需求", icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
+                { href: "/docs/features/crawl", t: "爬取 (Crawl)", d: "一个请求即可抓取网站的所有 URL", icon: "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" },
+                { href: "/docs/features/map", t: "映射 (Map)", d: "即时发现网站上的所有 URL", icon: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" },
+                { href: "/docs/features/batch-scrape", t: "批量抓取 (Batch Scrape)", d: "异步抓取数千个 URL", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
+              ].map((e) => (
+                <a href={e.href} class="block group">
+                  <div class="flex items-start gap-3 p-3 -mx-3 rounded-lg hover:bg-ink-800/50 transition">
+                    <div class="mt-0.5 w-8 h-8 rounded-md bg-gradient-to-br from-purple-500/30 to-purple-600/10 flex items-center justify-center shrink-0">
+                      <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d={e.icon}/></svg>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-ink-100 group-hover:text-purple-400 transition">{e.t}</div>
+                      <div class="text-sm text-ink-400">{e.d}</div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 快速开始 ========== -->
+    <section id="quickstart" class="py-24 scroll-mt-16">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="reveal text-center max-w-2xl mx-auto mb-12">
+          <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">快速开始</div>
+          <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+            <span class="text-gradient-fire">5 分钟</span> 即可上手
+          </h2>
+          <p class="text-ink-400 text-lg">
+            在 <a href="https://firecrawl.dev" target="_blank" rel="noopener" class="text-fire-400 hover:underline">firecrawl.dev</a> 注册以获取 API 密钥，前往 <a href="https://firecrawl.dev/playground" target="_blank" rel="noopener" class="text-fire-400 hover:underline">playground</a> 进行测试。
+          </p>
+        </div>
+
+        <div data-tabs="qs" class="reveal">
+          <div class="flex flex-wrap items-center justify-center gap-2 mb-8" role="tablist" aria-label="快速开始示例">
+            <button type="button" data-tab="search" class="tab-btn active px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 transition">🔍 搜索</button>
+            <button type="button" data-tab="scrape" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 text-ink-300 transition">📥 抓取</button>
+            <button type="button" data-tab="interact" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium border border-ink-800 text-ink-300 transition">🖱️ 交互</button>
+          </div>
+
+          <!-- Search -->
+          <div data-panel="search">
+            <div class="grid lg:grid-cols-2 gap-6 items-start">
+              <div>
+                <h3 class="text-2xl font-bold mb-3 text-ink-50">搜索 (Search)</h3>
+                <p class="text-ink-400 mb-6">搜索网页并获取搜索结果的完整内容。一次请求即可获得多个页面的 Markdown 内容，省去二次抓取。</p>
+                <div class="space-y-3 text-sm">
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">支持全网搜索与站内搜索</span></div>
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">自动返回结果的完整页面内容</span></div>
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">可指定返回数量与时间范围</span></div>
+                </div>
+                <a href="/docs/features/search" class="mt-6 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看完整文档 →</a>
+              </div>
+              <CodeCard label="search.py" code={qs.search.py} lang="python" dots copy />
+            </div>
+
+            <details class="mt-4 glass rounded-2xl overflow-hidden">
+              <summary class="px-5 py-3 flex items-center justify-between hover:bg-ink-800/30 transition">
+                <span class="font-semibold text-ink-200">查看 Node.js / cURL / CLI</span>
+                <svg class="chevron w-4 h-4 text-ink-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </summary>
+              <div class="border-t border-ink-800 p-5 space-y-5">
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">Node.js</div>
+                  <CodeCard label="search.js" code={qs.search.node} lang="js" small copy />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">cURL</div>
+                  <CodeCard label="终端" code={qs.search.curl} lang="bash" small copy />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">CLI</div>
+                  <CodeCard label="终端" code={qs.search.cli} lang="bash" small copy />
+                </div>
+              </div>
+            </details>
+
+            <div class="mt-4">
+              <CodeCard label="↳ 响应" code={qs.search.out} lang="json" />
+            </div>
+          </div>
+
+          <!-- Scrape -->
+          <div data-panel="scrape" class="hidden">
+            <div class="grid lg:grid-cols-2 gap-6 items-start">
+              <div>
+                <h3 class="text-2xl font-bold mb-3 text-ink-50">抓取 (Scrape)</h3>
+                <p class="text-ink-400 mb-6">从任意网站获取 LLM 就绪数据 —— Markdown、JSON、截图等。一次调用，多种输出格式。</p>
+                <div class="space-y-3 text-sm">
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">支持 Markdown、HTML、JSON、截图等多种格式</span></div>
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">智能处理 JS 渲染的 SPA 页面</span></div>
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">可配置抓取选项（主内容、代理等）</span></div>
+                </div>
+                <a href="/docs/features/scrape" class="mt-6 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看完整文档 →</a>
+              </div>
+              <CodeCard label="scrape.py" code={qs.scrape.py} lang="python" dots copy />
+            </div>
+
+            <details class="mt-4 glass rounded-2xl overflow-hidden">
+              <summary class="px-5 py-3 flex items-center justify-between hover:bg-ink-800/30 transition">
+                <span class="font-semibold text-ink-200">查看 Node.js / cURL / CLI</span>
+                <svg class="chevron w-4 h-4 text-ink-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </summary>
+              <div class="border-t border-ink-800 p-5 space-y-5">
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">Node.js</div>
+                  <CodeCard label="scrape.js" code={qs.scrape.node} lang="js" small copy />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">cURL</div>
+                  <CodeCard label="终端" code={qs.scrape.curl} lang="bash" small copy />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">CLI</div>
+                  <CodeCard label="终端" code={qs.scrape.cli} lang="bash" small copy />
+                </div>
+              </div>
+            </details>
+
+            <div class="mt-4">
+              <CodeCard label="↳ 响应 (Markdown)" code={qs.scrape.out} lang="md" />
+            </div>
+          </div>
+
+          <!-- Interact -->
+          <div data-panel="interact" class="hidden">
+            <div class="grid lg:grid-cols-2 gap-6 items-start">
+              <div>
+                <h3 class="text-2xl font-bold mb-3 text-ink-50">交互 (Interact)</h3>
+                <p class="text-ink-400 mb-6">抓取页面后，使用 AI 提示词或代码与其交互。可以点击按钮、填写表单、滚动页面等。</p>
+                <div class="space-y-3 text-sm">
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">自然语言指令驱动浏览器操作</span></div>
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">支持点击、滚动、输入、等待等操作</span></div>
+                  <div class="flex items-start gap-2"><span class="text-fire-400">✓</span><span class="text-ink-300">提供 Live View 实时查看浏览器状态</span></div>
+                </div>
+                <a href="/docs/features/interact" class="mt-6 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看完整文档 →</a>
+              </div>
+              <CodeCard label="interact.py" code={qs.interact.py} lang="python" dots copy />
+            </div>
+
+            <details class="mt-4 glass rounded-2xl overflow-hidden">
+              <summary class="px-5 py-3 flex items-center justify-between hover:bg-ink-800/30 transition">
+                <span class="font-semibold text-ink-200">查看 Node.js / cURL / CLI</span>
+                <svg class="chevron w-4 h-4 text-ink-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </summary>
+              <div class="border-t border-ink-800 p-5 space-y-5">
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">Node.js</div>
+                  <CodeCard label="interact.js" code={qs.interact.node} lang="js" small copy />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">cURL</div>
+                  <CodeCard label="终端" code={qs.interact.curl} lang="bash" small copy />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-400 mb-2 font-semibold">CLI</div>
+                  <CodeCard label="终端" code={qs.interact.cli} lang="bash" small copy />
+                </div>
+              </div>
+            </details>
+
+            <div class="mt-4">
+              <CodeCard label="↳ 响应" code={qs.interact.out} lang="json" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 为你的智能体赋能 ========== -->
+    <section id="agent" class="py-24 relative overflow-hidden scroll-mt-16">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-fire-950/20 to-transparent"></div>
+      <div class="relative max-w-7xl mx-auto px-6">
+        <div class="reveal text-center max-w-2xl mx-auto mb-16">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-4 rounded-full glass text-xs text-fire-300">
+            <span>🧠</span><span>为 AI 智能体而生</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+            为你的<span class="text-gradient-aurora">智能体</span>赋能
+          </h2>
+          <p class="text-ink-400 text-lg">几分钟内即可将 Firecrawl 连接到任何 AI 智能体或 MCP 客户端。</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-5">
+          <div class="reveal card-hover glass rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-fire-500/10 rounded-full blur-2xl"></div>
+            <div class="relative">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-fire-500 to-fire-700 flex items-center justify-center mb-4 text-2xl">⚡</div>
+              <h3 class="text-xl font-bold mb-2 text-ink-50">Skill（技能）</h3>
+              <p class="text-sm text-ink-400 mb-5">一条命令即可让你的智能体轻松访问实时网页数据。</p>
+              <CodeCard label="终端" code={skillCmd} lang="bash" small copy class="mb-4" />
+              <p class="text-xs text-ink-500">安装后重启你的智能体。支持 Claude Code、Antigravity、OpenCode 等。</p>
+            </div>
+          </div>
+
+          <div class="reveal card-hover glass rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+            <div class="relative">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mb-4 text-2xl">🔌</div>
+              <h3 class="text-xl font-bold mb-2 text-ink-50">MCP</h3>
+              <p class="text-sm text-ink-400 mb-5">几秒钟内将任何兼容 MCP 的客户端连接到网页。</p>
+              <CodeCard label="mcp.json" code={mcpJson} lang="json" small copy class="mb-4" />
+              <p class="text-xs text-ink-500">通用协议，兼容所有主流 MCP 客户端。</p>
+            </div>
+          </div>
+
+          <div class="reveal card-hover glass rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+            <div class="relative">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mb-4 text-2xl">🤖</div>
+              <h3 class="text-xl font-bold mb-2 text-ink-50">智能体入门</h3>
+              <p class="text-sm text-ink-400 mb-5">你是 AI 智能体吗？获取此 Skill，为你的用户注册并开始使用 Firecrawl。</p>
+              <CodeCard label="终端" code={onboardingCmd} lang="bash" small copy class="mb-4" />
+              <p class="text-xs text-ink-500">让你的智能体自动完成注册、获取密钥、构建应用全流程。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 更多端点 ========== -->
+    <section class="py-24">
+      <div class="max-w-7xl mx-auto px-6 space-y-20">
+        <!-- Agent -->
+        <div id="agent-endpoint" class="grid lg:grid-cols-5 gap-8 items-center scroll-mt-20">
+          <div class="reveal lg:col-span-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs text-purple-300 mb-3">
+              <span>🤖</span><span>AGENT</span>
+            </div>
+            <h3 class="text-3xl md:text-4xl font-black tracking-tight mb-4 text-ink-50">智能体 (Agent)</h3>
+            <p class="text-ink-400 text-lg mb-6 leading-relaxed">
+              从网页获取数据的<span class="text-ink-100 font-medium">最简单方式</span>。描述你的需求，AI 智能体会搜索、导航并检索数据，<span class="text-ink-100">无需提供 URL</span>。
+            </p>
+            <p class="text-sm text-ink-500 mb-6">Agent 是 <code class="text-ink-300 font-mono">/extract</code> 端点的升级版：更快、更可靠，且无需提前知道 URL。</p>
+            <ul class="space-y-2 text-sm text-ink-300">
+              <li class="flex items-start gap-2"><span class="text-fire-400">→</span>支持结构化输出（基于 schema）</li>
+              <li class="flex items-start gap-2"><span class="text-fire-400">→</span>可选择 spark-1-mini 或 spark-1-pro 模型</li>
+              <li class="flex items-start gap-2"><span class="text-fire-400">→</span>可选地限定到特定 URL 集合</li>
+            </ul>
+            <a href="/docs/features/agent" class="mt-6 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看完整文档 →</a>
+          </div>
+          <div class="reveal lg:col-span-3 space-y-3">
+            <CodeCard label="cURL" code={agentCurl} lang="bash" copy />
+            <CodeCard label="↳ 响应" code={agentOut} lang="json" />
+          </div>
+        </div>
+
+        <!-- 模型选择 -->
+        <div class="reveal glass rounded-2xl p-6 md:p-8">
+          <div class="flex items-start gap-3 mb-5">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-fire-500/20 to-fire-700/10 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-fire-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold mb-1 text-ink-50">模型选择</h4>
+              <p class="text-sm text-ink-400">根据需求选择两种模型：</p>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4 mb-5">
+            <div class="border border-ink-800 rounded-xl p-5 bg-ink-950/50">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-fire-400 font-semibold">spark-1-mini</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-green-500/15 text-green-400 border border-green-500/20">默认</span>
+              </div>
+              <div class="text-sm text-ink-300 mb-2">便宜 <span class="text-fire-400 font-bold">60%</span></div>
+              <div class="text-xs text-ink-500">适用场景：大多数任务</div>
+            </div>
+            <div class="border border-ink-800 rounded-xl p-5 bg-ink-950/50">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-purple-400 font-semibold">spark-1-pro</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/20">Pro</span>
+              </div>
+              <div class="text-sm text-ink-300 mb-2">标准价格</div>
+              <div class="text-xs text-ink-500">适用场景：复杂研究、关键数据收集</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm font-semibold text-ink-200 mb-3">何时使用 Pro：</div>
+            <div class="grid sm:grid-cols-2 gap-2 text-sm text-ink-400">
+              <div class="flex items-start gap-2"><span class="text-purple-400">▸</span>跨多个网站比较数据</div>
+              <div class="flex items-start gap-2"><span class="text-purple-400">▸</span>从需要认证的网站提取数据</div>
+              <div class="flex items-start gap-2"><span class="text-purple-400">▸</span>智能体需要探索多条路径</div>
+              <div class="flex items-start gap-2"><span class="text-purple-400">▸</span>准确性至关重要的关键数据</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Crawl -->
+        <div id="crawl-endpoint" class="grid lg:grid-cols-5 gap-8 items-center scroll-mt-20">
+          <div class="reveal lg:col-span-2 order-2 lg:order-1 space-y-3">
+            <CodeCard label="crawl.sh" code={crawlCurl} lang="bash" copy />
+            <CodeCard label="↳ 返回任务 ID" code={crawlOut} lang="json" />
+          </div>
+          <div class="reveal lg:col-span-3 order-1 lg:order-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 mb-3">
+              <span>🕷️</span><span>CRAWL</span>
+            </div>
+            <h3 class="text-3xl md:text-4xl font-black tracking-tight mb-4 text-ink-50">爬取 (Crawl)</h3>
+            <p class="text-ink-400 text-lg leading-relaxed">爬取整个网站并获取所有页面的内容。SDK 会自动处理轮询，提供更好的开发体验。</p>
+            <a href="/docs/features/crawl" class="mt-6 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看完整文档 →</a>
+          </div>
+        </div>
+
+        <!-- Map + Batch -->
+        <div class="grid md:grid-cols-2 gap-6">
+          <div id="map-endpoint" class="reveal card-hover glass rounded-2xl p-6 scroll-mt-20">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 mb-3">
+              <span>🗺️</span><span>MAP</span>
+            </div>
+            <h3 class="text-2xl font-bold mb-2 text-ink-50">映射 (Map)</h3>
+            <p class="text-sm text-ink-400 mb-4">即时发现网站上的所有 URL。配合搜索可查找特定 URL。</p>
+            <CodeCard label="终端" code={mapCurl} lang="bash" small copy />
+            <a href="/docs/features/map" class="mt-4 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看完整文档 →</a>
+          </div>
+          <div id="batch-endpoint" class="reveal card-hover glass rounded-2xl p-6 scroll-mt-20">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 mb-3">
+              <span>📦</span><span>BATCH</span>
+            </div>
+            <h3 class="text-2xl font-bold mb-2 text-ink-50">批量抓取 (Batch Scrape)</h3>
+            <p class="text-sm text-ink-400 mb-4">一次性抓取多个 URL。适合大规模数据采集场景。</p>
+            <CodeCard label="batch.py" code={batchPy} lang="python" small copy />
+            <a href="/docs/features/batch-scrape" class="mt-4 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看完整文档 →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SDK ========== -->
+    <section id="sdks" class="py-24 relative scroll-mt-16">
+      <div class="absolute inset-0 bg-radial-fire opacity-30"></div>
+      <div class="relative max-w-7xl mx-auto px-6">
+        <div class="reveal text-center max-w-2xl mx-auto mb-12">
+          <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">SDK</div>
+          <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+            多语言 <span class="text-gradient-fire">SDK</span>
+          </h2>
+          <p class="text-ink-400 text-lg">我们的 SDK 提供了一种便捷的方式来使用 Firecrawl 的所有功能，并自动处理异步操作的轮询。</p>
+        </div>
+
+        <div data-tabs="sdk" class="reveal">
+          <div class="flex flex-wrap items-center justify-center gap-2 mb-8" role="tablist" aria-label="SDK 语言">
+            {sdkTabs.map((t, i) => (
+              <button type="button" data-tab={t.id} class:list={["sdk-btn px-5 py-2 rounded-lg text-sm font-medium border border-ink-800 transition", i === 0 ? "active" : "text-ink-300"]}>{t.label}</button>
+            ))}
+          </div>
+
+          {Object.entries(sdks).map(([id, s], i) => (
+            <div data-panel={id} class:list={{ hidden: i !== 0 }}>
+              <div class="grid lg:grid-cols-2 gap-6">
+                <div>
+                  <h3 class="text-2xl font-bold mb-2 text-ink-50">
+                    {s.name}
+                    {s.tag && <span class="text-xs text-ink-500 font-normal ml-2">({s.tag})</span>}
+                  </h3>
+                  <p class="text-ink-400 mb-4 text-sm">{s.desc}</p>
+                  <a href={`/docs/sdks/${id === "node" ? "nodejs" : id}`} class="inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">查看 SDK 文档 →</a>
+                </div>
+                <div class="space-y-3">
+                  <CodeCard label={s.installLabel} code={s.install} lang={s.installLang} small />
+                  <CodeCard label={s.file} code={s.code} lang={s.lang} copy />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 集成 ========== -->
+    <section id="integrations" class="py-24 scroll-mt-16">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="reveal text-center max-w-2xl mx-auto mb-12">
+          <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">集成</div>
+          <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+            无缝集成到你<span class="text-gradient-fire">喜爱的工具</span>
+          </h2>
+          <p class="text-ink-400 text-lg">与主流 AI 工具和自动化平台开箱即用。</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-5">
+          <div class="reveal card-hover glass rounded-2xl p-6">
+            <div class="text-xs font-mono text-fire-400 mb-3">智能体与 AI 工具</div>
+            <div class="grid grid-cols-2 gap-2">
+              {[
+                { href: "https://docs.firecrawl.dev/sdks/cli", emoji: "⚡", t: "Firecrawl Skill", d: "CLI Skill" },
+                { href: "https://github.com/firecrawl/cli", emoji: "🛠️", t: "CLI Skills", d: "Agent Skills" },
+                { href: "https://github.com/firecrawl/firecrawl-workflows", emoji: "🔁", t: "Workflows", d: "工作流" },
+                { href: "https://github.com/mendableai/firecrawl-mcp-server", emoji: "🔌", t: "MCP Server", d: "Model Context" },
+              ].map((x) => (
+                <a href={x.href} target="_blank" rel="noopener" class="flex items-center gap-3 p-3 rounded-lg bg-ink-950/50 border border-ink-800 hover:border-fire-500/30 transition">
+                  <div class="w-8 h-8 rounded bg-gradient-to-br from-fire-500/30 to-fire-600/10 flex items-center justify-center text-sm shrink-0">{x.emoji}</div>
+                  <div class="min-w-0">
+                    <div class="text-sm font-semibold text-ink-100 truncate">{x.t}</div>
+                    <div class="text-xs text-ink-500 truncate">{x.d}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div class="reveal card-hover glass rounded-2xl p-6">
+            <div class="text-xs font-mono text-purple-400 mb-3">平台</div>
+            <div class="grid grid-cols-1 gap-2">
+              {[
+                { href: "https://docs.lovable.dev/integrations/firecrawl", emoji: "💜", t: "Lovable", d: "AI 应用构建平台" },
+                { href: "https://zapier.com/apps/firecrawl/integrations", emoji: "⚙️", t: "Zapier", d: "无代码自动化" },
+                { href: "https://n8n.io/integrations/firecrawl/", emoji: "🔄", t: "n8n", d: "工作流自动化" },
+              ].map((x) => (
+                <a href={x.href} target="_blank" rel="noopener" class="flex items-center gap-3 p-3 rounded-lg bg-ink-950/50 border border-ink-800 hover:border-purple-500/30 transition">
+                  <div class="w-8 h-8 rounded bg-gradient-to-br from-purple-500/30 to-purple-600/10 flex items-center justify-center text-sm shrink-0">{x.emoji}</div>
+                  <div>
+                    <div class="text-sm font-semibold text-ink-100">{x.t}</div>
+                    <div class="text-xs text-ink-500">{x.d}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <a href="https://www.firecrawl.dev/integrations" target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-1 text-sm text-fire-400 hover:underline">
+              查看所有集成 <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="text-center mt-8 text-sm text-ink-500">
+          没有你喜欢的工具？
+          <a href="https://github.com/mendableai/firecrawl/issues" target="_blank" rel="noopener" class="text-fire-400 hover:underline">提交 issue 告诉我们！</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 开源 vs 云端 ========== -->
+    <section id="opensource" class="py-24 relative scroll-mt-16">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-fire-950/10 to-transparent"></div>
+      <div class="relative max-w-7xl mx-auto px-6">
+        <div class="reveal text-center max-w-2xl mx-auto mb-12">
+          <div class="inline-block text-xs uppercase tracking-widest text-fire-400 font-semibold mb-3">开源 vs 云端</div>
+          <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+            两种方式，<span class="text-gradient-fire">同等强大</span>
+          </h2>
+          <p class="text-ink-400 text-lg">Firecrawl 基于 AGPL-3.0 许可证开源。你可以自托管，也可以使用托管服务。</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="reveal card-hover glass rounded-2xl p-7">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-2xl">🌟</span>
+              <h3 class="text-2xl font-bold text-ink-50">开源</h3>
+            </div>
+            <p class="text-ink-400 text-sm mb-5">基于 AGPL-3.0 许可证，透明且可审计。</p>
+            <ul class="space-y-2 text-sm text-ink-300 mb-6">
+              <li class="flex items-start gap-2"><span class="text-green-400">✓</span>完全免费使用</li>
+              <li class="flex items-start gap-2"><span class="text-green-400">✓</span>可自托管，数据自主可控</li>
+              <li class="flex items-start gap-2"><span class="text-green-400">✓</span>社区驱动，代码透明</li>
+              <li class="flex items-start gap-2"><span class="text-green-400">✓</span>可自由定制和扩展</li>
+            </ul>
+            <a href="/docs/self-host" class="inline-flex items-center gap-2 text-sm font-medium text-fire-400 hover:underline">
+              自托管与贡献指南 →
+            </a>
+          </div>
+
+          <div class="reveal card-hover glass rounded-2xl p-7 border-fire-500/30">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">☁️</span>
+                <h3 class="text-2xl font-bold text-ink-50">云端</h3>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded bg-fire-500/15 text-fire-400 border border-fire-500/20">推荐</span>
+            </div>
+            <p class="text-ink-400 text-sm mb-5">在 <a href="https://firecrawl.dev" target="_blank" rel="noopener" class="text-fire-400 hover:underline">firecrawl.dev</a> 上使用托管服务。</p>
+            <ul class="space-y-2 text-sm text-ink-300 mb-6">
+              <li class="flex items-start gap-2"><span class="text-fire-400">✓</span>零配置，立即上手</li>
+              <li class="flex items-start gap-2"><span class="text-fire-400">✓</span>无限扩展，无运维负担</li>
+              <li class="flex items-start gap-2"><span class="text-fire-400">✓</span>高可用 SLA 保障</li>
+              <li class="flex items-start gap-2"><span class="text-fire-400">✓</span>额外的智能体和高级功能</li>
+            </ul>
+            <a href="https://firecrawl.dev" target="_blank" rel="noopener" class="btn-primary inline-flex items-center gap-2 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+              免费开始 →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CTA ========== -->
+    <section class="py-24">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="reveal relative glass rounded-3xl p-10 md:p-16 text-center overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-fire-500/10 via-transparent to-purple-500/10"></div>
+          <div class="flame top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] opacity-40"></div>
+          <div class="relative">
+            <div class="text-5xl md:text-6xl mb-4 animate-flicker inline-block">🔥</div>
+            <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink-50">
+              准备好<span class="text-gradient-fire">点燃</span>你的 AI 应用了吗？
+            </h2>
+            <p class="text-ink-300 text-lg mb-8 max-w-xl mx-auto">
+              立即注册，免费获取 API 密钥，开始构建下一代 AI 驱动的网络数据应用。
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a href="https://firecrawl.dev" target="_blank" rel="noopener" class="btn-primary text-white font-semibold px-7 py-3.5 rounded-xl flex items-center gap-2">
+                <span>免费开始</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+              </a>
+              <a href="/docs" class="text-ink-200 font-medium px-7 py-3.5 rounded-xl border border-ink-700 hover:border-ink-600 transition">
+                阅读中文文档
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 资源 & 社交 ========== -->
+    <section class="py-20 border-t border-ink-800/60">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-10">
+          <h2 class="text-2xl font-bold mb-2 text-ink-50">保持联系</h2>
+          <p class="text-ink-400 text-sm">加入我们的社区，获取最新动态和支持。</p>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <a href="https://github.com/firecrawl/firecrawl" target="_blank" rel="noopener" class="glass hover:border-ink-600 transition rounded-xl px-5 py-3 flex items-center gap-3">
+            <svg class="w-5 h-5 text-ink-100" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <div class="text-left">
+              <div class="text-sm font-semibold text-ink-100">GitHub</div>
+              <div class="text-xs text-ink-500">Star & Fork</div>
+            </div>
+          </a>
+          <a href="https://twitter.com/firecrawl" target="_blank" rel="noopener" class="glass hover:border-ink-600 transition rounded-xl px-5 py-3 flex items-center gap-3">
+            <svg class="w-5 h-5 text-ink-100" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <div class="text-left">
+              <div class="text-sm font-semibold text-ink-100">X (Twitter)</div>
+              <div class="text-xs text-ink-500">关注我们</div>
+            </div>
+          </a>
+          <a href="https://www.linkedin.com/company/104100957" target="_blank" rel="noopener" class="glass hover:border-ink-600 transition rounded-xl px-5 py-3 flex items-center gap-3">
+            <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            <div class="text-left">
+              <div class="text-sm font-semibold text-ink-100">LinkedIn</div>
+              <div class="text-xs text-ink-500">公司动态</div>
+            </div>
+          </a>
+          <a href="https://discord.gg/firecrawl" target="_blank" rel="noopener" class="glass hover:border-ink-600 transition rounded-xl px-5 py-3 flex items-center gap-3">
+            <svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
+            <div class="text-left">
+              <div class="text-sm font-semibold text-ink-100">Discord</div>
+              <div class="text-xs text-ink-500">加入社区</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== Footer ========== -->
+    <footer class="border-t border-ink-800/60 py-12">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <Logo class="h-5 w-5 text-fire-500" />
+              <span class="font-bold text-ink-50">Firecrawl</span>
+            </div>
+            <p class="text-sm text-ink-500 leading-relaxed">大规模搜索、抓取和交互网页的 API。为 AI 时代打造的网络数据基础设施。</p>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-ink-400 font-semibold mb-3">产品</div>
+            <ul class="space-y-2 text-sm text-ink-300">
+              <li><a href="#features" class="hover:text-fire-400 transition">功能</a></li>
+              <li><a href="#endpoints" class="hover:text-fire-400 transition">端点</a></li>
+              <li><a href="#sdks" class="hover:text-fire-400 transition">SDK</a></li>
+              <li><a href="#integrations" class="hover:text-fire-400 transition">集成</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-ink-400 font-semibold mb-3">资源</div>
+            <ul class="space-y-2 text-sm text-ink-300">
+              <li><a href="/docs" class="hover:text-fire-400 transition">中文文档</a></li>
+              <li><a href="https://docs.firecrawl.dev/api-reference/introduction" target="_blank" rel="noopener" class="hover:text-fire-400 transition">API 参考</a></li>
+              <li><a href="https://firecrawl.dev/playground" target="_blank" rel="noopener" class="hover:text-fire-400 transition">Playground</a></li>
+              <li><a href="https://firecrawl.dev/changelog" target="_blank" rel="noopener" class="hover:text-fire-400 transition">更新日志</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-ink-400 font-semibold mb-3">社区</div>
+            <ul class="space-y-2 text-sm text-ink-300">
+              <li><a href="https://github.com/firecrawl/firecrawl" target="_blank" rel="noopener" class="hover:text-fire-400 transition">GitHub</a></li>
+              <li><a href="https://twitter.com/firecrawl" target="_blank" rel="noopener" class="hover:text-fire-400 transition">X (Twitter)</a></li>
+              <li><a href="https://www.linkedin.com/company/104100957" target="_blank" rel="noopener" class="hover:text-fire-400 transition">LinkedIn</a></li>
+              <li><a href="https://discord.gg/firecrawl" target="_blank" rel="noopener" class="hover:text-fire-400 transition">Discord</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-8 border-t border-ink-800/60 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-ink-500">
+          <div>本项目基于 GNU Affero General Public License v3.0（AGPL-3.0）许可证授权。SDK 和部分 UI 组件基于 MIT 许可证授权。</div>
+          <a href="#top" class="text-fire-400 hover:underline flex items-center gap-1">↑ 返回顶部</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ========== 免责提示 ========== -->
+    <div class="bg-ink-950 border-t border-ink-800/60 py-5 text-center text-xs text-ink-500 px-6">
+      <p class="max-w-3xl mx-auto">
+        ⚖️ <span class="text-ink-400 font-semibold">合规提示：</span>最终用户有责任在抓取时遵守网站政策。建议用户遵守适用的隐私政策和使用条款。默认情况下，Firecrawl 会遵守 robots.txt 指令。使用 Firecrawl 即表示你同意遵守这些条件。
+      </p>
+    </div>
+  </div>
+
+  <script>
+    /* Landing interactions. Runs once as a module; re-initializes on every
+       astro:page-load and tears down on astro:before-swap so navigation
+       never duplicates loops or listeners. */
+
+    let teardown: (() => void) | null = null;
+
+    function init() {
+      const root = document.getElementById("landing-root");
+      if (!root) return;
+      const cleanups: Array<() => void> = [];
+      const on = (el: EventTarget, ev: string, fn: EventListenerOrEventListenerObject, opts?: AddEventListenerOptions) => {
+        el.addEventListener(ev, fn, opts);
+        cleanups.push(() => el.removeEventListener(ev, fn, opts));
+      };
+
+      /* ---- scroll reveal ---- */
+      document.documentElement.classList.add("js-reveal");
+      cleanups.push(() => document.documentElement.classList.remove("js-reveal"));
+      const revealIO = new IntersectionObserver(
+        (entries) => entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("revealed");
+            revealIO.unobserve(e.target);
+          }
+        }),
+        { threshold: 0.08 },
+      );
+      root.querySelectorAll(".reveal").forEach((el) => revealIO.observe(el));
+      cleanups.push(() => revealIO.disconnect());
+
+      /* ---- tabs (quickstart + SDK) ---- */
+      on(root, "click", (ev) => {
+        const btn = (ev.target as HTMLElement).closest<HTMLElement>("[data-tab]");
+        if (!btn) return;
+        const group = btn.closest<HTMLElement>("[data-tabs]");
+        if (!group) return;
+        const name = btn.dataset.tab!;
+        group.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle("active", active);
+          b.classList.toggle("text-ink-300", !active);
+          b.setAttribute("aria-selected", String(active));
+        });
+        group.querySelectorAll<HTMLElement>("[data-panel]").forEach((p) => {
+          p.classList.toggle("hidden", p.dataset.panel !== name);
+        });
+      });
+
+      /* ---- copy code ---- */
+      on(root, "click", async (ev) => {
+        const btn = (ev.target as HTMLElement).closest<HTMLElement>("[data-copy]");
+        if (!btn) return;
+        const code = btn.closest(".code-card")?.querySelector("pre code");
+        if (!code) return;
+        const text = (code as HTMLElement).innerText;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+        }
+        const orig = btn.textContent ?? "复制";
+        btn.textContent = "✓ 已复制";
+        btn.classList.add("text-green-400");
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove("text-green-400");
+        }, 1500);
+      });
+
+      /* ---- mobile menu ---- */
+      const menuBtn = document.getElementById("menu-btn");
+      const menu = document.getElementById("mobile-menu");
+      if (menuBtn && menu) {
+        on(menuBtn, "click", () => {
+          const open = menu.classList.toggle("hidden") === false;
+          menuBtn.setAttribute("aria-expanded", String(open));
+        });
+        menu.querySelectorAll("a").forEach((a) =>
+          on(a, "click", () => {
+            menu.classList.add("hidden");
+            menuBtn.setAttribute("aria-expanded", "false");
+          }),
+        );
+      }
+
+      /* ---- scrollspy ---- */
+      const spyLinks = Array.from(root.querySelectorAll<HTMLAnchorElement>("[data-spy]"));
+      const spyIO = new IntersectionObserver(
+        (entries) => entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          spyLinks.forEach((l) => l.classList.toggle("nav-active", l.dataset.spy === e.target.id));
+        }),
+        { rootMargin: "-30% 0px -60% 0px" },
+      );
+      spyLinks.forEach((l) => {
+        const sec = document.getElementById(l.dataset.spy!);
+        if (sec) spyIO.observe(sec);
+      });
+      cleanups.push(() => spyIO.disconnect());
+
+      /* ---- count-up stats ---- */
+      const counted = new WeakSet<Element>();
+      const countIO = new IntersectionObserver(
+        (entries) => entries.forEach((e) => {
+          if (!e.isIntersecting || counted.has(e.target)) return;
+          counted.add(e.target);
+          const el = e.target as HTMLElement;
+          const target = parseFloat(el.dataset.count ?? "0");
+          const decimals = parseInt(el.dataset.decimals ?? "0", 10);
+          const suffix = el.dataset.suffix ?? "";
+          const t0 = performance.now();
+          const dur = 1200;
+          const tick = (t: number) => {
+            const p = Math.min(1, (t - t0) / dur);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = (target * eased).toFixed(decimals) + suffix;
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+          countIO.unobserve(el);
+        }),
+        { threshold: 0.5 },
+      );
+      root.querySelectorAll("[data-count]").forEach((el) => countIO.observe(el));
+      cleanups.push(() => countIO.disconnect());
+
+      /* ---- hero embers ---- */
+      const canvas = document.getElementById("embers") as HTMLCanvasElement | null;
+      const hero = document.getElementById("top");
+      if (canvas && hero && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          let raf = 0;
+          let running = false;
+          let w = 0;
+          let h = 0;
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+          type P = { x: number; y: number; r: number; vy: number; vx: number; a: number; hue: number };
+          let parts: P[] = [];
+          const spawn = (): P => ({
+            x: Math.random() * w,
+            y: h + 10,
+            r: 1 + Math.random() * 2.4,
+            vy: 0.4 + Math.random() * 1.1,
+            vx: (Math.random() - 0.5) * 0.35,
+            a: 0.15 + Math.random() * 0.5,
+            hue: 18 + Math.random() * 30,
+          });
+          const resize = () => {
+            w = hero.clientWidth;
+            h = hero.clientHeight;
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const n = Math.min(48, Math.round(w / 26));
+            parts = Array.from({ length: n }, () => {
+              const p = spawn();
+              p.y = Math.random() * h;
+              return p;
+            });
+          };
+          const frame = () => {
+            if (!running) return;
+            ctx.clearRect(0, 0, w, h);
+            for (const p of parts) {
+              p.y -= p.vy;
+              p.x += p.vx + Math.sin(p.y * 0.02) * 0.2;
+              if (p.y < -12) Object.assign(p, spawn());
+              const fade = Math.min(1, p.y / (h * 0.25));
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fillStyle = `hsla(${p.hue}, 95%, 60%, ${p.a * fade})`;
+              ctx.shadowColor = "rgba(249,115,22,0.8)";
+              ctx.shadowBlur = 6;
+              ctx.fill();
+              ctx.shadowBlur = 0;
+            }
+            raf = requestAnimationFrame(frame);
+          };
+          const start = () => {
+            if (running || document.hidden) return;
+            running = true;
+            raf = requestAnimationFrame(frame);
+          };
+          const stop = () => {
+            running = false;
+            cancelAnimationFrame(raf);
+          };
+          resize();
+          on(window, "resize", resize);
+          const heroIO = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? start() : stop())), { threshold: 0.02 });
+          heroIO.observe(hero);
+          on(document, "visibilitychange", () => (document.hidden ? stop() : start()));
+          cleanups.push(() => {
+            stop();
+            heroIO.disconnect();
+          });
+        }
+      }
+
+      teardown = () => cleanups.forEach((fn) => fn());
+    }
+
+    document.addEventListener("astro:page-load", init);
+    document.addEventListener("astro:before-swap", () => {
+      teardown?.();
+      teardown = null;
+    });
+  </script>
+</BaseLayout>

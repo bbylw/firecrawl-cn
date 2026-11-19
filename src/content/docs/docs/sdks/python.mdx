@@ -1,0 +1,96 @@
+---
+title: Python SDK
+description: 安装并使用 Firecrawl 的 Python SDK，包含抓取、智能体、爬取与搜索示例。
+sidebar:
+  order: 1
+  label: Python
+---
+
+Python SDK 的包名是 `firecrawl-py`，导入名为 `Firecrawl`。它覆盖全部端点，并自动处理异步任务的轮询。
+
+## 安装
+
+```bash
+pip install firecrawl-py
+```
+
+## 快速上手
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+# 抓取单个 URL
+doc = app.scrape("https://firecrawl.dev", formats=["markdown"])
+print(doc.markdown)
+
+# 使用 Agent 进行自主数据收集
+result = app.agent(prompt="Find the founders of Stripe")
+print(result.data)
+
+# 爬取网站（自动等待完成）
+docs = app.crawl("https://docs.firecrawl.dev", limit=50)
+for doc in docs.data:
+    print(doc.metadata.source_url, doc.markdown[:100])
+
+# 搜索网页
+results = app.search("best AI data tools 2024", limit=10)
+print(results)
+```
+
+## 与 Pydantic 集成
+
+智能体支持用 Pydantic 模型定义输出结构，`result.data` 会按 schema 返回，便于直接校验和入库。
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class Founder(BaseModel):
+    name: str = Field(description="Full name of the founder")
+    role: Optional[str] = Field(None, description="Role or position")
+
+class FoundersSchema(BaseModel):
+    founders: List[Founder] = Field(description="List of founders")
+
+result = app.agent(
+    prompt="Find the founders of Firecrawl",
+    schema=FoundersSchema
+)
+
+print(result.data)
+```
+
+## 其他常用方法
+
+```python
+# 交互：先抓取，再用提示词操作页面
+scraped = app.scrape("https://amazon.com")
+scrape_id = scraped.metadata.scrape_id
+app.interact(scrape_id, prompt="Search for 'mechanical keyboard'")
+
+# 映射：只要 URL 列表
+links = app.map("https://firecrawl.dev", search="pricing")
+
+# 批量抓取：一次提交多个已知 URL
+job = app.batch_scrape([
+    "https://firecrawl.dev",
+    "https://docs.firecrawl.dev",
+    "https://firecrawl.dev/pricing"
+], formats=["markdown"])
+```
+
+## 密钥管理
+
+推荐把密钥放在环境变量里，而不是写进源码：
+
+```bash
+export FIRECRAWL_API_KEY="fc-YOUR_API_KEY"
+```
+
+## 另见
+
+- [SDK 总览](/docs/sdks)：其他语言的封装
+- [智能体 Agent](/docs/features/agent)：结构化输出与模型选择
+- [爬取 Crawl](/docs/features/crawl)：SDK 自动轮询背后的 HTTP 流程

@@ -1,0 +1,58 @@
+---
+title: 开源与自托管
+description: Firecrawl 以 AGPL-3.0 开源，云端版本包含额外功能；本地运行与自托管的入口与许可说明。
+sidebar:
+  order: 6
+  label: 开源与自托管
+---
+
+Firecrawl 开源，主体采用 **AGPL-3.0** 许可证，开发过程透明且欢迎协作。[firecrawl.dev](https://firecrawl.dev) 云端版本在开源能力之上包含额外功能。你可以选择直接调用托管 API，也可以把整套服务跑在自己的基础设施上。
+
+## 开源 vs 云端
+
+| 维度 | 开源自托管 | 云端 firecrawl.dev |
+| --- | --- | --- |
+| 许可证 | AGPL-3.0；SDK 与部分 UI 组件为 MIT | 商业托管服务，按套餐计费 |
+| 部署与运维 | 自己准备运行环境、消息队列与存储 | 无需运维，拿到密钥即可调用 |
+| 功能范围 | 开源仓库实现的能力 | 包含额外功能，官方在 README 中逐项对比 |
+| 并发与配额 | 取决于你的基础设施与调优 | 由套餐决定，随规模扩缩 |
+| 数据位置 | 完全留在你的环境内 | 由 Firecrawl 托管处理 |
+| 升级方式 | 自行拉取新版本并部署 | 自动获得更新 |
+| 适合谁 | 数据合规要求高、需要改内核、想学习实现原理 | 想尽快上线、不想维护抓取基础设施 |
+
+关于哪些能力只存在于云端，请以官方仓库的“开源 vs 云端”对比图与[定价页](https://firecrawl.dev/pricing)为准，本页不复制会过期的清单。
+
+## 本地运行
+
+想在本地把项目跑起来（开发、调试、二次修改），请先阅读[贡献指南](https://github.com/firecrawl/firecrawl/blob/main/CONTRIBUTING.md)，它说明了环境准备、依赖安装与提交流程。
+
+<Aside type="note" title="阅读许可条款">
+AGPL-3.0 对网络服务有额外的源码提供义务：如果你修改 Firecrawl 并通过网络对外提供服务，需要向使用者提供修改后的源码。商用前请确认自己的使用方式符合许可证要求。
+</Aside>
+
+## 自托管
+
+要在自己的服务器上部署完整服务，请按照[自托管指南](https://docs.firecrawl.dev/contributing/self-host)操作，其中包含架构组成、必需的环境变量、依赖服务与 `docker compose` 启动步骤。
+
+自托管前建议先确认这几件事：
+
+- 出站网络可达，抓取需要访问任意目标站点
+- 预留足够资源处理浏览器渲染，并发越高需求越大
+- 自行配置密钥、速率限制与监控告警
+- 目标站点的 robots.txt 与使用条款同样需要你自己负责，见[资源与合规](/docs/resources)
+
+## 许可证细节
+
+- 项目主体：GNU Affero General Public License v3.0（AGPL-3.0）
+- SDK 与部分 UI 组件：MIT 许可证
+- 更细的边界以各目录中的 `LICENSE` 文件为准
+
+<Aside type="tip" title="贡献">
+欢迎贡献代码！提交 pull request 之前请先阅读[贡献指南](https://github.com/firecrawl/firecrawl/blob/main/CONTRIBUTING.md)，[贡献者页面](https://github.com/firecrawl/firecrawl/graphs/contributors)列出了参与过项目的人。
+</Aside>
+
+## 另见
+
+- [简介](/docs)：Firecrawl 的能力概览
+- [集成](/docs/integrations)：与第三方工具的连接方式
+- [资源与合规](/docs/resources)：文档入口与使用责任

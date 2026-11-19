@@ -1,0 +1,80 @@
+---
+title: Rust SDK
+description: 在 Cargo.toml 中引入 Firecrawl 的 Rust SDK，并在 tokio 异步运行时中抓取、爬取与搜索。
+sidebar:
+  order: 5
+  label: Rust
+---
+
+Rust SDK 是异步客户端，所有网络方法都返回 `Future`，需要配合 tokio 运行时使用。它同样会等待爬取任务完成后再返回结果。
+
+## 安装
+
+在 `Cargo.toml` 中添加依赖：
+
+```toml
+[dependencies]
+firecrawl = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```
+
+## 快速上手
+
+```rust
+use firecrawl::{Client, ScrapeOptions, Format, CrawlOptions};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new("fc-YOUR_API_KEY")?;
+
+    // 抓取 URL
+    let document = client.scrape("https://firecrawl.dev", None).await?;
+    println!("{:?}", document.markdown);
+
+    // 爬取网站
+    let options = CrawlOptions {
+        limit: Some(50),
+        ..Default::default()
+    };
+    let result = client.crawl("https://docs.firecrawl.dev", options).await?;
+    println!("Crawled {} pages", result.data.len());
+
+    // 搜索网页
+    let response = client.search("best web scraping tools 2024", None).await?;
+    println!("{:?}", response.data);
+
+    Ok(())
+}
+```
+
+## 调用约定
+
+- `Client::new` 接受 API 密钥并返回 `Result`，密钥无效或缺失时立刻报错
+- 抓取与搜索的第二个参数是可选配置：传 `None` 使用默认选项，传 `Some(...)` 指定输出格式等
+- 爬取用 `CrawlOptions` 结构体配置，配合 `..Default::default()` 只覆盖你关心的字段，例如 `limit`
+- 所有方法都是 `async`，用 `.await?` 直接向上冒泡错误，`main` 返回 `Result` 即可
+
+## 密钥管理
+
+把密钥放到环境变量里，运行时读取，避免写进源码：
+
+```bash
+export FIRECRAWL_API_KEY="fc-YOUR_API_KEY"
+```
+
+```rust
+let client = Client::new(std::env::var("FIRECRAWL_API_KEY")?)?;
+```
+
+## 方法对照
+
+| 端点 | Rust 方法 |
+| --- | --- |
+| [抓取](/docs/features/scrape) | `client.scrape(url, options)` |
+| [爬取](/docs/features/crawl) | `client.crawl(url, options)` |
+| [搜索](/docs/features/search) | `client.search(query, options)` |
+
+## 另见
+
+- [SDK 总览](/docs/sdks)：其他语言的封装
+- [功能概览](/docs/features)：各端点的请求与响应结构

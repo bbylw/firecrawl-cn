@@ -1,0 +1,182 @@
+---
+title: 快速开始
+description: 注册获取 API 密钥、安装 SDK，并在几分钟内完成第一次网页抓取。
+sidebar:
+  order: 1
+---
+
+<Render file="api-key" />
+
+在 [firecrawl.dev](https://firecrawl.dev) 注册即可获取 API 密钥；如果你还不想写代码，可以直接在 [playground](https://firecrawl.dev/playground) 中试跑所有端点。
+
+## 你需要准备
+
+- 一个 Firecrawl 账号与 API 密钥（免费开始，注册后即有额度）
+- Python 3.10+ 或 Node.js 18+；如果只想试请求，用 cURL 也可以
+
+## 四个步骤
+
+<Steps>
+<Step title="安装 SDK">
+
+选择你使用的语言。Python 包名为 `firecrawl-py`，Node.js 包名为 `firecrawl`。
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```bash
+pip install firecrawl-py
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```bash
+npm install firecrawl
+```
+
+</TabItem>
+<TabItem label="cURL">
+
+无需安装，直接发起 HTTP 请求即可，见下一步。
+
+</TabItem>
+</Tabs>
+
+</Step>
+<Step title="设置密钥">
+
+把密钥放进环境变量，避免写死在代码里。
+
+```bash title="终端"
+export FIRECRAWL_API_KEY="fc-YOUR_API_KEY"
+```
+
+在 SDK 中传入密钥字符串同样可行，下面示例中的 `fc-YOUR_API_KEY` 请替换成你自己的密钥。
+
+</Step>
+<Step title="第一次抓取">
+
+把任意 URL 转换成 LLM 就绪的内容，这是最常用的入口。
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+result = app.scrape('firecrawl.dev')
+print(result.markdown)
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+
+const result = await app.scrape('firecrawl.dev');
+console.log(result.markdown);
+```
+
+</TabItem>
+<TabItem label="cURL">
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/scrape' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "firecrawl.dev"
+  }'
+```
+
+</TabItem>
+<TabItem label="CLI">
+
+```bash
+firecrawl scrape https://firecrawl.dev
+```
+
+</TabItem>
+</Tabs>
+
+</Step>
+<Step title="查看输出">
+
+抓取结果默认包含页面的 Markdown 正文以及标题、来源 URL 等元数据。
+
+```markdown title="输出"
+# Firecrawl
+
+Firecrawl 帮助 AI 系统搜索、抓取和交互网页。
+
+## 功能
+- 搜索：在全网查找信息
+- 抓取：从任意页面获取干净数据
+- 交互：点击、导航和操作页面
+- 智能体：自主数据收集
+```
+
+响应体中还有一个 `metadata` 对象，包含 `title`、`sourceURL` 等字段，可直接用于溯源。
+
+</Step>
+</Steps>
+
+## 试试搜索
+
+搜索会返回结果的完整页面内容，而不只是链接。
+
+<Tabs syncKey="fc-lang">
+<TabItem label="Python">
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+search_result = app.search("firecrawl", limit=5)
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import { Firecrawl } from 'firecrawl';
+
+const app = new Firecrawl({ apiKey: "fc-YOUR_API_KEY" });
+
+await app.search("firecrawl", { limit: 5 });
+```
+
+</TabItem>
+<TabItem label="cURL">
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/search' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "firecrawl",
+    "limit": 5
+  }'
+```
+
+</TabItem>
+</Tabs>
+
+## 接下来
+
+- 了解全部端点：[功能概览](/docs/features)
+- 不想提供 URL 也能取数：[智能体 Agent](/docs/features/agent)
+- 爬取整站：[爬取 Crawl](/docs/features/crawl)
+- 查看你所用语言的封装：[SDK](/docs/sdks)
+- 把 Firecrawl 接进你的 AI 智能体：[为你的智能体赋能](/docs/agents)
+
+<Aside type="note" title="关于异步任务">
+爬取和批量抓取是异步任务，HTTP 接口需要先创建任务再轮询状态。各语言 [SDK](/docs/sdks) 会自动处理轮询，开发体验更好。
+</Aside>

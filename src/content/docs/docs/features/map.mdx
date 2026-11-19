@@ -1,0 +1,77 @@
+---
+title: 映射 Map
+description: 即时发现网站上的所有 URL，返回带标题和描述的链接列表。
+sidebar:
+  order: 6
+  label: 映射
+---
+
+映射端点（`POST /v2/map`）只做一件事：把一个网站上尽可能多的 URL 列出来，不抓取页面正文。它因此非常快，适合先摸清站点结构、挑选目标页面，再对这些页面调用[抓取](/docs/features/scrape)或[批量抓取](/docs/features/batch-scrape)。
+
+## 示例
+
+```bash
+curl -X POST 'https://api.firecrawl.dev/v2/map' \
+  -H 'Authorization: Bearer fc-YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://firecrawl.dev"}'
+```
+
+响应：
+
+```json title="响应"
+{
+  "success": true,
+  "links": [
+    {"url": "https://firecrawl.dev", "title": "Firecrawl", "description": "Turn websites into LLM-ready data"},
+    {"url": "https://firecrawl.dev/pricing", "title": "Pricing", "description": "Firecrawl pricing plans"},
+    {"url": "https://firecrawl.dev/blog", "title": "Blog", "description": "Firecrawl blog"}
+  ]
+}
+```
+
+每条链接都带 `url`、`title` 和 `description`，无需抓取正文就能判断哪些页面值得继续。
+
+## 带搜索的映射
+
+在网站内查找特定 URL：把 `search` 传进去，返回结果会按与查询的相关度排序。
+
+```python
+from firecrawl import Firecrawl
+
+app = Firecrawl(api_key="fc-YOUR_API_KEY")
+
+result = app.map("https://firecrawl.dev", search="pricing")
+# 返回按与 "pricing" 相关度排序的 URL
+```
+
+这在“我知道信息在这个站点，但不知道具体页面”时特别省事 —— 相比全站[爬取](/docs/features/crawl)，它省掉了逐个抓取正文的开销。
+
+## 能力
+
+- **即时返回**：只发现链接，不抓内容，延迟远低于爬取
+- **大范围覆盖**：快速枚举站点下的 URL，适合做索引和覆盖率检查
+- **带上下文的链接**：返回标题与描述，便于筛选
+- **站内检索**：用 `search` 在单个站点内按相关度定位 URL
+- **爬取的前置步骤**：先 map 再按需抓取，避免为无关页面消耗额度
+
+## 常用参数
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `url` | string | 要映射的网站入口 URL，必填 |
+| `search` | string | 在结果中按语义筛选并按相关度排序 |
+
+更多参数（例如返回条数上限、是否包含子域）请见 [API 参考](https://docs.firecrawl.dev/api-reference/introduction)。
+
+## 典型用法
+
+1. 用映射拿到 URL 列表并按 `title`、`description` 过滤
+2. 把筛选出的 URL 交给[批量抓取](/docs/features/batch-scrape)，或对单个页面调用[抓取](/docs/features/scrape)
+3. 如果你不在意抓哪些页面，直接一次[爬取](/docs/features/crawl)更简单
+
+## 另见
+
+- [爬取 Crawl](/docs/features/crawl)：发现并抓取整站内容
+- [批量抓取 Batch Scrape](/docs/features/batch-scrape)：并发抓取已知 URL
+- [搜索 Search](/docs/features/search)：跨站检索而非站内枚举

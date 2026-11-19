@@ -1,0 +1,50 @@
+---
+title: 集成
+description: Firecrawl 的智能体与 AI 工具集成、第三方平台集成，以及如何提交你想要的集成。
+sidebar:
+  order: 5
+  label: 集成
+---
+
+Firecrawl 可以直接嵌进你已经在工作使用的智能体、编码工具和自动化平台。下面按用途分成两组：一组给 AI 智能体和开发环境使用，一组给低代码平台与工作流使用。
+
+## 智能体与 AI 工具
+
+- [Firecrawl Skill](https://docs.firecrawl.dev/sdks/cli)：一条命令让智能体获得实时网页数据，详见 [Skill 技能](/docs/agents/skill)
+- [Firecrawl CLI Skills](https://github.com/firecrawl/cli#agent-skills)：CLI 提供的技能文件与可用命令清单
+- [Firecrawl Workflows](https://github.com/firecrawl/firecrawl-workflows)：面向常见取数场景的现成工作流
+- [Firecrawl MCP](https://github.com/mendableai/firecrawl-mcp-server)：连接到任何兼容 MCP 的客户端，详见 [MCP](/docs/agents/mcp)
+
+## 平台
+
+- [Lovable](https://docs.lovable.dev/integrations/firecrawl)：在生成的应用里直接调用网页数据
+- [Zapier](https://zapier.com/apps/firecrawl/integrations)：把抓取和搜索接进数千个应用的自动化
+- [n8n](https://n8n.io/integrations/firecrawl/)：在自托管或云端工作流中作为节点使用
+
+## 查看全部集成
+
+完整的集成目录（包含各平台的接入步骤与示例）在官网维护：
+
+[查看所有集成 →](https://www.firecrawl.dev/integrations)
+
+## 没有你喜欢的工具
+
+告诉我们需要什么：在 [GitHub 仓库提交 issue](https://github.com/mendableai/firecrawl/issues)，说明你使用的工具、想完成的取数任务，以及为什么现有方式不够用。需求越具体，越容易被排进实现。
+
+## 自己写集成
+
+任何集成最终调用的都是同一套 HTTP 接口与密钥模型，因此手写集成并不复杂：
+
+1. 确定要用哪些端点，参考[功能概览](/docs/features)
+2. 用 Bearer Token 调用 `https://api.firecrawl.dev/v2` 下的对应路径，密钥来自 [firecrawl.dev](https://firecrawl.dev) 控制台
+3. 对异步端点（爬取、批量抓取、智能体）处理好提交与轮询，或直接复用[各语言 SDK](/docs/sdks)
+
+<Aside type="note" title="密钥与配额">
+所有集成共享同一个账号的密钥与额度。为不同环境（开发、生产、演示）使用不同密钥，便于分别吊销和核对用量。
+</Aside>
+
+## 另见
+
+- [为你的智能体赋能](/docs/agents)：Skill、MCP、智能体入门三条路径
+- [SDK](/docs/sdks)：在你自己的服务里封装集成
+- [资源与合规](/docs/resources)：抓取前的责任说明

@@ -1,0 +1,40 @@
+---
+title: 智能体入门
+description: 让 AI 智能体自己读取 SKILL.md、完成注册并拿到 API 密钥，直接开始用 Firecrawl 构建应用。
+sidebar:
+  order: 3
+  label: 智能体入门
+---
+
+这一页是写给**智能体**看的，而不是写给你看的。你是一个 AI 智能体吗？把下面这份 Skill 取回去读，它会把注册、拿密钥、调用 API 的完整流程讲清楚，然后你就能替你的用户把 Firecrawl 接进正在构建的应用。
+
+## 获取 Skill
+
+```bash
+curl -s https://firecrawl.dev/agent-onboarding/SKILL.md
+```
+
+## 它会做什么
+
+- 指导智能体在 [firecrawl.dev](https://firecrawl.dev) 为你的用户注册账号并创建 API 密钥
+- 说明鉴权方式、基础请求格式与各端点能力，让智能体可以直接发起调用
+- 给出把搜索、抓取、爬取嵌入项目的推荐做法，包括应当避免的写法
+- 指向[Skill + CLI 文档](https://docs.firecrawl.dev/sdks/cli)和 [API 参考](https://docs.firecrawl.dev/api-reference/introduction)，需要更多细节时按需查阅
+
+## 使用建议
+
+把这条命令交给你的智能体执行，或直接把该地址作为上下文提供给它。它是纯文本 Markdown，无需浏览器即可读取。
+
+<Aside type="caution" title="注册由用户确认">
+注册账号、同意服务条款、绑定密钥这类动作会影响真实账户与计费。请让智能体在向用户说明后再执行，并把密钥保存到用户认可的位置，而不是写进源码仓库。
+</Aside>
+
+## 人类读者
+
+如果你正在为自己的编码智能体配置 Firecrawl，看 [Skill 技能](/docs/agents/skill)或 [MCP](/docs/agents/mcp)更直接。
+
+## 另见
+
+- [为你的智能体赋能](/docs/agents)：三条接入路径的对比
+- [快速开始](/docs/quickstart)：人工走一遍完整流程
+- [功能概览](/docs/features)：智能体可以调用的端点

@@ -1,0 +1,118 @@
+---
+title: Go SDK（社区）
+description: 安装并使用位于 Firecrawl 主仓库 apps/go-sdk 目录的 Go SDK，抓取、爬取、搜索与映射。
+sidebar:
+  order: 6
+  label: Go（社区）
+---
+
+Go SDK 由社区维护，源码放在主仓库的 `apps/go-sdk` 目录下，以嵌套模块的方式发布。它是原生 Go 风格 API：所有方法接受 `context.Context`，错误通过返回值上报，爬取与批量抓取默认自动轮询到完成。
+
+## 要求
+
+- Go 1.23 或更高版本
+
+## 安装
+
+```bash
+go get github.com/firecrawl/firecrawl/apps/go-sdk
+```
+
+## API 密钥
+
+在 [firecrawl.dev](https://firecrawl.dev) 控制台创建密钥，并设置为环境变量：
+
+```bash
+export FIRECRAWL_API_KEY="fc-your-api-key-here"
+```
+
+## 快速上手
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	firecrawl "github.com/firecrawl/firecrawl/apps/go-sdk"
+	"github.com/firecrawl/firecrawl/apps/go-sdk/option"
+)
+
+func main() {
+	// 创建客户端（自动读取 FIRECRAWL_API_KEY）
+	client, err := firecrawl.NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 也可以直接传入 API 密钥
+	client, err = firecrawl.NewClient(
+		option.WithAPIKey("fc-your-api-key"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ctx := context.Background()
+
+	// 抓取单个页面
+	doc, err := client.Scrape(ctx, "https://example.com", &firecrawl.ScrapeOptions{
+		Formats: []string{"markdown"},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(doc.Markdown)
+}
+```
+
+## 其他端点
+
+```go
+// 爬取网站（自动轮询到完成）
+job, err := client.Crawl(ctx, "https://example.com", &firecrawl.CrawlOptions{
+	Limit: firecrawl.Int(50),
+})
+
+// 搜索网页并抓取结果
+results, err := client.Search(ctx, "firecrawl web scraping", &firecrawl.SearchOptions{
+	Limit: firecrawl.Int(5),
+})
+
+// 映射：发现站点上的 URL
+mapData, err := client.Map(ctx, "https://example.com", &firecrawl.MapOptions{
+	Search: firecrawl.String("pricing"),
+})
+
+// 智能体：描述需求，由 AI 自主取数
+status, err := client.Agent(ctx, &firecrawl.AgentOptions{
+	Prompt: "Find all pricing plans and their features",
+})
+```
+
+## 调用约定
+
+- 客户端用 `firecrawl.NewClient()` 创建，可通过 `option` 子包配置密钥、API 地址、重试次数、退避系数与超时
+- 所有方法第一个参数是 `context.Context`，便于取消和设置截止时间
+- 可选字段使用指针，SDK 提供 `firecrawl.Int`、`firecrawl.Bool`、`firecrawl.String` 等便捷构造函数
+- 异步端点有两种用法：`Crawl`、`BatchScrape`、`Agent` 自动轮询；`StartCrawl` 加 `GetCrawlStatus` 则完全由你掌控轮询节奏
+- 错误是带类型的，例如 `AuthenticationError`、`RateLimitError`、`JobTimeoutError`、`FirecrawlError`，可用 `errors.As` 分支处理
+
+## 版本与发布
+
+由于代码位于 monorepo 子目录，Go 的嵌套模块标签约定要求标签带子目录前缀（如 `apps/go-sdk/v1.3.0`）。使用时按正常语义化版本固定即可：
+
+```bash
+go get github.com/firecrawl/firecrawl/apps/go-sdk@v1.3.0
+```
+
+<Aside type="note" title="社区维护">
+Go SDK 不在官方 SDK 之列，接口可能随版本变化。完整用法、错误处理和发布流程请以仓库内的 [go-sdk README](https://github.com/firecrawl/firecrawl/tree/main/apps/go-sdk) 为准。
+</Aside>
+
+## 另见
+
+- [SDK 总览](/docs/sdks)：官方 SDK 列表
+- [功能概览](/docs/features)：各端点共用的请求与响应结构

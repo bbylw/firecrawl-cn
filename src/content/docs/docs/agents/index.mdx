@@ -1,0 +1,35 @@
+---
+title: 为你的智能体赋能
+description: 几分钟内把 Firecrawl 接到任何 AI 智能体或 MCP 客户端：Skill、MCP 与智能体入门。
+sidebar:
+  order: 4
+  label: 为你的智能体赋能
+  group:
+    label: 智能体集成
+---
+
+除了让你的代码调用 Firecrawl，你还可以让**你的 AI 智能体**直接调用它。Firecrawl 提供三条接入路径，任选其一即可在几分钟内让智能体获得实时网页数据；它们的区别只在于你的客户端更擅长哪一种。
+
+<CardGrid>
+<Card title="Skill（技能）" href="/docs/agents/skill">一条命令安装 CLI 与技能文件，适合 Claude Code 等编码智能体。</Card>
+<Card title="MCP" href="/docs/agents/mcp">用标准 MCP 配置连接，适合所有兼容 MCP 的客户端。</Card>
+<Card title="智能体入门" href="/docs/agents/onboarding">把 SKILL.md 直接交给智能体阅读，让它自行注册并开始构建。</Card>
+</CardGrid>
+
+## 三条路径怎么选
+
+| 路径 | 你需要做什么 | 适合谁 |
+| --- | --- | --- |
+| [Skill](/docs/agents/skill) | 运行一条 `npx` 初始化命令，然后重启智能体 | 已在用 Claude Code、Antigravity、OpenCode 等客户端的开发者 |
+| [MCP](/docs/agents/mcp) | 在客户端配置里加一段 `mcpServers` JSON | 任何兼容 MCP 的客户端，或需要跨工具共享同一份配置 |
+| [智能体入门](/docs/agents/onboarding) | 让智能体抓取一个 `SKILL.md` 地址 | 你正在构建自己的智能体，希望它自己完成注册与接入 |
+
+## 共同点
+
+三条路径最终都指向同一套能力：[搜索](/docs/features/search)、[抓取](/docs/features/scrape)、[交互](/docs/features/interact)、[智能体](/docs/features/agent)、[爬取](/docs/features/crawl)、[映射](/docs/features/map) 与 [批量抓取](/docs/features/batch-scrape)，也都使用同一个 API 密钥鉴权。
+
+<Aside type="tip" title="密钥准备">
+接入前先在 [firecrawl.dev](https://firecrawl.dev) 注册并创建 API 密钥。CLI 与 MCP 都会读取它，建议放进环境变量 `FIRECRAWL_API_KEY`。
+</Aside>
+
+需要完整的命令清单请查看 [Skill + CLI 文档](https://docs.firecrawl.dev/sdks/cli)；想了解 MCP 服务器的实现与全部可用工具，请看 [firecrawl-mcp-server](https://github.com/firecrawl/firecrawl-mcp-server)。

@@ -1,0 +1,60 @@
+---
+title: 简介
+description: Firecrawl 是大规模搜索、抓取和交互网页的 API，把任意网站转换成干净的 Markdown 或结构化数据，供 AI 智能体使用。
+sidebar:
+  order: 0
+  label: 简介
+---
+
+Firecrawl 是一款**网络上下文 API**：在大规模范围内搜索网页、抓取内容并与页面交互，把网站转换成干净的 Markdown 或结构化数据，直接供你的 AI 智能体使用。项目开源，同时提供[托管服务](https://firecrawl.dev)。
+
+你只需要提供一个 URL 或一句需求描述，剩下的代理轮换、页面渲染、内容抽取和格式转换都由 Firecrawl 完成。
+
+## 为什么选择 Firecrawl
+
+- **行业领先的可靠性**：覆盖 96% 的网页，包括重度 JS 渲染的页面，无需自己配置代理即可拿到干净数据（参见[基准测试](https://www.firecrawl.dev/blog/the-worlds-best-web-data-api-v25)）
+- **极速响应**：数百万页面的 P95 延迟仅为 3.4 秒，专为实时智能体和动态应用打造
+- **LLM 友好输出**：干净的 Markdown、结构化 JSON、截图等，更少的 Token 消耗，更好的 AI 应用体验
+- **我们处理繁琐事务**：自动轮换代理、编排、速率限制、JS 拦截内容等，零配置
+- **智能体就绪**：一条命令即可将 Firecrawl 连接到任何 AI 智能体或 MCP 客户端
+- **媒体解析**：解析并提取网络上托管的 PDF、DOCX 等文件内容
+- **交互操作**：在提取内容前，点击、滚动、输入、等待和按键
+- **开源**：透明且协作开发，欢迎[加入社区](https://github.com/firecrawl/firecrawl)
+
+## 功能概览
+
+### 核心端点
+
+| 功能 | 描述 |
+| --- | --- |
+| [搜索 Search](/docs/features/search) | 搜索网页并获取搜索结果的完整页面内容 |
+| [抓取 Scrape](/docs/features/scrape) | 将任意 URL 转换为 Markdown、HTML、截图或结构化 JSON |
+| [交互 Interact](/docs/features/interact) | 抓取页面后，使用 AI 提示词或代码与其交互 |
+
+### 更多功能
+
+| 功能 | 描述 |
+| --- | --- |
+| [智能体 Agent](/docs/features/agent) | 自动化数据收集，只需描述你的需求 |
+| [爬取 Crawl](/docs/features/crawl) | 一个请求即可抓取网站的所有 URL |
+| [映射 Map](/docs/features/map) | 即时发现网站上的所有 URL |
+| [批量抓取 Batch Scrape](/docs/features/batch-scrape) | 异步抓取数千个 URL |
+
+所有端点都通过 HTTPS 调用 `https://api.firecrawl.dev/v2`，使用 Bearer Token 鉴权；除裸 HTTP 之外，你也可以用各语言 [SDK](/docs/sdks)、[CLI](/docs/agents/skill) 或 [MCP](/docs/agents/mcp) 来使用它们。
+
+## 开始使用
+
+<CardGrid>
+<Card title="快速开始" href="/docs/quickstart">注册密钥、安装 SDK，完成第一次抓取。</Card>
+<Card title="功能概览" href="/docs/features">逐个端点查看请求示例与响应结构。</Card>
+<Card title="SDK" href="/docs/sdks">Python、Node.js、Java、Elixir、Rust 以及社区 Go SDK。</Card>
+<Card title="为你的智能体赋能" href="/docs/agents">用 Skill、MCP 或智能体入门接入实时网页数据。</Card>
+</CardGrid>
+
+## 开源与云端
+
+Firecrawl 主体以 AGPL-3.0 许可证开源，SDK 和部分 UI 组件以 MIT 许可证发布。[firecrawl.dev](https://firecrawl.dev) 云端版本在此之上包含额外功能。你可以在本地运行开源版本，也可以自行托管，详见[开源与自托管](/docs/self-host)。
+
+<Aside type="tip" title="下一步">
+从[快速开始](/docs/quickstart)跑通第一个请求，或直接跳到与你场景最接近的端点文档，例如[搜索](/docs/features/search)和[智能体](/docs/features/agent)。
+</Aside>
